@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC " -//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+
+    <properties resource="./db.properties"/>
+
+    <!--
+      targetRuntime="MyBatis3Simple":生成简单版的CRUD
+      "MyBatis3":豪华版
+    -->
+    <context id="DB2Tables" targetRuntime="MyBatis3">
+
+        <!--
+        https://www.cnblogs.com/xxoome/p/10068780.html
+        当你取消了所有注释，你在重复运行generator时在mapper.xml中会出现重复的元素。并且这个plugin可以解决这个问题
+        -->
+        <!--覆盖生成XML文件-->
+        <plugin type="org.mybatis.generator.plugins.UnmergeableXmlMappersPlugin" />
+
+        <!-- 忽略生成注释日期 -->
+        <commentGenerator>
+            <!-- 这个元素用来去除指定生成的注释中是否包含生成的日期 false:表示保护 -->
+            <!-- 如果生成日期，会造成即使修改一个字段，整个实体类所有属性都会发生变化，不利于版本控制，所以设置为true -->
+            <property name="suppressDate" value="true"/>
+            <!-- 是否去除自动生成的注释 true：是 ： false:否 -->
+            <property name="suppressAllComments" value="true"/>
+        </commentGenerator>
+
+
+        <!-- jdbcConnection：指定如何连接到目标数据库 -->
+        <jdbcConnection driverClass="${driver}"
+                        connectionURL="${url}"
+                        userId="${username}"
+                        password="${password}">
+            <!--
+             解决问题：Cannot obtain primary key information from the database, generated objects may be incomplete
+            -->
+            <property name="nullCatalogMeansCurrent" value="true"/>
+        </jdbcConnection>
+
+        <!--  -->
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+
+        <!-- 生成model实体类文件位置 -->
+        <javaModelGenerator targetPackage="com.eh.frog.sample.orm.bean"
+                            targetProject="/Users/david/my/study/project/frog/frog-sample/src/main/java">
+            <property name="enableSubPackages" value="true"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <!-- 生成mapper.xml配置文件位置 -->
+        <sqlMapGenerator targetPackage="mybatis.mapper"
+                         targetProject="/Users/david/my/study/project/frog/frog-sample/src/main/resources">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+        <!-- 生成mapper接口文件位置 -->
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.eh.frog.sample.orm.dao"
+                             targetProject="/Users/david/my/study/project/frog/frog-sample/src/main/java">
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <!-- 需要生成的实体类对应的表名，多个实体类复制多份该配置即可 -->
+        <!--
+        Example设置为true会生成QBC风格的代码
+        QBC(Query By Criteria) API提供了检索对象的另一种方式，它主要由Criteria接口、Criterion接口和Expression类组成，
+        它支持在运行时动态生成查询语句。
+        建议关闭，所有的sql都应由开发自己来统一维护，虽然会降低开发速度，但是集中管理可以提高可阅读星，出现问题也能快速定位sql
+        -->
+        <!--<table tableName="department" domainObjectName="Department"
+               enableCountByExample="false" enableUpdateByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false"
+               selectByExampleQueryId="false">
+        </table>-->
+        <table tableName="user" domainObjectName="User"
+               enableCountByExample="false" enableUpdateByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false"
+               selectByExampleQueryId="false">
+        </table>
+    </context>
+</generatorConfiguration>

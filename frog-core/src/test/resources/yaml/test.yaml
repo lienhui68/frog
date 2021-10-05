@@ -1,0 +1,2 @@
+pojo1: !!com.eh.frog.core.test.TestEntity { id: 1 }
+pojo2: !!com.eh.frog.core.test.TestEntity { id: 2 }

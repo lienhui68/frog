@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scanPeriod="60 seconds" debug="false">
+
+    <timestamp key="dt" datePattern="yyyyMMdd HH:mm:ss"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--高亮-->
+            <pattern>${dt} [%thread] %highlight(%-5level) %cyan(%logger{50}) - %msg%n</pattern>
+        </encoder>
+        <withJansi>true</withJansi>
+    </appender>
+
+    <logger name="com.eh.frog.sample.orm.dao" level="debug"/>
+    <logger name="org.mybatis" level="debug"/>
+
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

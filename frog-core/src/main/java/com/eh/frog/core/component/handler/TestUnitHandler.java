@@ -17,10 +17,7 @@ import com.eh.frog.core.util.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -70,8 +67,7 @@ public class TestUnitHandler {
 	public void prepareMockData() {
 		try {
 
-			if (null != frogRuntimeContext.getPrepareData().getVirtualMockSet()
-					&& null != frogRuntimeContext.getPrepareData().getVirtualMockSet()) {
+			if (null != frogRuntimeContext.getPrepareData().getVirtualMockSet()) {
 
 				log.info("Preparing MOCK data...");
 				// init mock
@@ -167,6 +163,42 @@ public class TestUnitHandler {
 			throw new FrogTestException("mock数据error", e);
 		}
 
+	}
+
+	/**
+	 * 准备MOck数据
+	 */
+	public void prepareConfigData() {
+		try {
+			if (null != frogRuntimeContext.getPrepareData().getVirtualConfigSet()) {
+				log.info("Preparing Config data...");
+				// init mock
+				frogRuntimeContext.getPrepareData().getVirtualConfigSet().forEach(m -> {
+					try {
+						String container = m.getContainer();
+						String configField = m.getConfigField();
+						Object configVal = m.getConfigValue();
+						Class clazz = Class.forName(container);
+						Field f = clazz.getDeclaredField(configField);
+						f.setAccessible(true);
+						Field modifiersField = Field.class.getDeclaredField("modifiers");
+						modifiersField.setAccessible(true);
+						modifiersField.setInt(f, f.getModifiers() & ~Modifier.FINAL);
+						f.set(null, configVal);
+						log.info("设置配置项, container:{}, field:{}, value:{}", container, configField, ObjectUtil.toJson(configVal));
+					} catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
+						e.printStackTrace();
+					}
+				});
+			} else {
+				log.info("None config preparation");
+			}
+		} catch (FrogTestException fe) {
+			throw new FrogTestException("准备Config数据发生错误", fe);
+		} catch (Exception e) {
+			throw new FrogTestException(
+					"Unknown exception while preparing config data. ", e);
+		}
 	}
 
 	/**

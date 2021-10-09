@@ -36,6 +36,57 @@ OrderController_create_001: !!com.eh.frog.core.model.PrepareData
       container: com.eh.frog.sample.controller.OrderController
       object: !!com.eh.frog.sample.rpc.response.Coupon { userId: 1025229, couponId: 9999, couponAmount: 5.00 }
       target: com.eh.frog.sample.rpc.virtual.CouponRpcService#getCoupon(java.lang.Long, java.math.BigDecimal)
+  virtualConfigSet:
+    - desc: mock第三方服务
+      container: com.eh.frog.sample.lion.OrderLionConfig
+      configField: bizSwitch
+      configValue: true
+
+
+OrderController_create_002: !!com.eh.frog.core.model.PrepareData
+  desc: 成功创建订单，优惠开关关闭
+  args:
+    - desc: 创建订单入参
+      object: !!com.eh.frog.sample.orm.bean.Order { buyerId: 1025229, gmtCreate: null, gmtModified: null, id: null, isValid: null, orderAmount: 225.25, orderId: null, orderStatus: null, orderTime: '2021-10-08 14:37:10' }
+  depDataSet:
+    - dataObjClazz: com.eh.frog.sample.orm.bean.User
+      tableName: tbl_user
+      tableBaseDesc: 用户表
+      tableData:
+        - { user_id: 1025229, user_name: 武松, gmt_modified: '2021-09-08 18:00:00' }
+  expectDataSet:
+    - dataObjClazz: null
+      tableName: tbl_user
+      tableBaseDesc: 用户表
+      flags: { }
+      tableData:
+        - { user_name: 武松, user_id: 1025229 }
+    - dataObjClazz: null
+      tableName: tbl_order
+      tableBaseDesc: 订单表
+      flags: { gmt_create: D200 }
+      tableData:
+        - { order_amount: 225.25, order_time: '2021-10-08 14:37:10', order_status: 1, buyer_id: 1025229, is_valid: 1, gmt_create: today }
+  expectEventSet:
+    - desc: 订单创建成功消息
+      flags: { com.eh.frog.sample.mq.model.OrderEventMessage: {orderId: L1, orderTime: D5} }
+      msgClass: com.eh.frog.sample.mq.model.OrderEventMessage
+      objects:
+        - !!com.eh.frog.sample.mq.model.OrderEventMessage { eventType: CREATE, orderAmount: 225.25, orderId: 123, orderTime: 2021-10-08 14:37:08 }
+  expectResult:
+    desc: 入参1
+    object: !!com.eh.frog.sample.base.Response { data: true, error: '200', msg: 服务调用成功, status: 1 }
+  virtualMockSet:
+    - desc: mock第三方服务
+      container: com.eh.frog.sample.controller.OrderController
+      object: !!com.eh.frog.sample.rpc.response.Coupon { userId: 1025229, couponId: 9999, couponAmount: 5.00 }
+      target: com.eh.frog.sample.rpc.virtual.CouponRpcService#getCoupon(java.lang.Long, java.math.BigDecimal)
+  virtualConfigSet:
+    - desc: mock第三方服务
+      container: com.eh.frog.sample.lion.OrderLionConfig
+      configField: bizSwitch
+      configValue: false
+
 
 
 

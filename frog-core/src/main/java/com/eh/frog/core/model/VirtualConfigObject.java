@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 public class VirtualConfigObject {
 	private String desc;
-	private String configClass;
-	private String configKey;
+	private String container;
+	private String configField;
 	private Object configValue;
 }

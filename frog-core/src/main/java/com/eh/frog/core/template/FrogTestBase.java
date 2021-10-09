@@ -12,8 +12,8 @@ import com.eh.frog.core.component.mock.MockContextHolder;
 import com.eh.frog.core.config.GlobalConfigurationHolder;
 import com.eh.frog.core.context.FrogRuntimeContext;
 import com.eh.frog.core.context.FrogRuntimeContextHolder;
-import com.eh.frog.core.exception.FrogTestException;
 import com.eh.frog.core.exception.FrogCheckException;
+import com.eh.frog.core.exception.FrogTestException;
 import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.util.FrogFileUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -143,7 +143,7 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	protected abstract void test(String caseId, PrepareData prepareData);
 
 	public void runTest(String caseId, PrepareData prepareData) {
-		log.info("=============================Start executing TestCase caseId:" + caseId + " "
+		log.info("=============================Start executing, TestCase caseId:" + caseId + " "
 				+ prepareData.getDesc() + "=================");
 		initRuntimeContext(caseId, prepareData, testPath);
 		initTestUnitHandler();
@@ -152,6 +152,8 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 			// before all tests, the method will be executed
 			beforeActsTest(frogRuntimeContext);
 			process(frogRuntimeContext);
+			log.info("=============================Execute success, TestCase caseId:" + caseId + " "
+					+ prepareData.getDesc() + "=================");
 		} catch (FrogCheckException fe) {
 			log.error("case数据校验失败,id:{},失败原因:{}", caseId, fe.getMessage());
 		} catch (FrogTestException fe) {
@@ -197,6 +199,7 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 
 		testUnitHandler.prepareDepData();
 		testUnitHandler.prepareMockData();
+		testUnitHandler.prepareConfigData();
 
 		log.info("=============================[frog prepare end]=============================\r\n");
 	}

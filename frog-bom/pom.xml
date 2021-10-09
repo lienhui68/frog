@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.eh.frog</groupId>
+    <artifactId>frog-bom</artifactId>
+    <version>1.0.0</version>
+    <name>frog-bom</name>
+    <description>frog pom</description>
+    <packaging>pom</packaging>
+
+    <properties>
+        <frog.core.version>1.0.0</frog.core.version>
+        <frog.util.version>1.0.0</frog.util.version>
+    </properties>
+
+    <developers>
+        <developer>
+            <name>lienhui68</name>
+            <email>lienhui1992@gmail.com</email>
+        </developer>
+    </developers>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.eh.frog</groupId>
+                <artifactId>frog-core</artifactId>
+                <version>${frog.core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eh.frog</groupId>
+                <artifactId>frog-util</artifactId>
+                <version>${frog.util.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.eh.frog</groupId>
+            <artifactId>frog-core</artifactId>
+            <version>${frog.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.eh.frog</groupId>
+            <artifactId>frog-util</artifactId>
+            <version>${frog.util.version}</version>
+        </dependency>
+
+    </dependencies>
+
+</project>

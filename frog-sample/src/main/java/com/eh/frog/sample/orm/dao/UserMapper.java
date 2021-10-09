@@ -3,15 +3,17 @@ package com.eh.frog.sample.orm.dao;
 import com.eh.frog.sample.orm.bean.User;
 
 public interface UserMapper {
-	int deleteByPrimaryKey(Integer id);
+    int deleteByPrimaryKey(Long id);
 
-	int insert(User record);
+    int insert(User record);
 
-	int insertSelective(User record);
+    int insertSelective(User record);
 
-	User selectByPrimaryKey(Integer id);
+    User selectByPrimaryKey(Long id);
 
-	int updateByPrimaryKeySelective(User record);
+    User selectByUserId(Long userId);
 
-	int updateByPrimaryKey(User record);
+    int updateByPrimaryKeySelective(User record);
+
+    int updateByPrimaryKey(User record);
 }

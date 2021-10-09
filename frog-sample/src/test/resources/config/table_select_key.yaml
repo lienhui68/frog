@@ -1,1 +1,2 @@
-user: [user_id]
+tbl_user: [user_id]
+tbl_order: [buyer_id]

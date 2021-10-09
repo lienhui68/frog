@@ -11,6 +11,7 @@
     <modules>
         <module>frog-sample</module>
         <module>frog-core</module>
+        <module>frog-util</module>
     </modules>
 
     <properties>

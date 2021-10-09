@@ -4,10 +4,10 @@
  */
 package com.eh.frog.sample;
 
-import com.eh.frog.annotation.FrogTest;
-import com.eh.frog.component.event.MessageEventAdvisorConfig;
-import com.eh.frog.model.PrepareData;
-import com.eh.frog.template.FrogTestBase;
+import com.eh.frog.core.annotation.FrogTest;
+import com.eh.frog.core.component.event.MessageEventAdvisorConfig;
+import com.eh.frog.core.template.FrogTestBase;
+import com.eh.frog.core.model.PrepareData;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -22,7 +22,7 @@ public class SampleTest extends FrogTestBase {
 
 
 	@Override
-	@FrogTest(target = "com.eh.frog.sample.controller.UserController#createUser(com.eh.frog.sample.orm.bean.User)", selected = {"001", "002"})
+	@FrogTest(target = "com.eh.frog.sample.controller.OrderController#create(com.eh.frog.sample.orm.bean.Order)", selected = {"001", "002"})
 	protected void test(String caseId, PrepareData prepareData) {
 		runTest(caseId, prepareData);
 	}

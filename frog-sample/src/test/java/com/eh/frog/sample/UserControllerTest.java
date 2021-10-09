@@ -4,7 +4,7 @@
  */
 package com.eh.frog.sample;
 
-import com.eh.frog.component.event.MessageEventAdvisorConfig;
+import com.eh.frog.core.component.event.MessageEventAdvisorConfig;
 import com.eh.frog.sample.base.Response;
 import com.eh.frog.sample.controller.UserController;
 import com.eh.frog.sample.orm.bean.User;
@@ -29,7 +29,7 @@ public class UserControllerTest {
 
 	@Test
 	public void test() {
-		User user = userController.getUser(1);
+		User user = userController.getUser(1L);
 		System.out.println(user);
 	}
 
@@ -38,7 +38,10 @@ public class UserControllerTest {
 	 */
 	@Test
 	public void createUser() {
-		Response response = userController.createUser(new User(1025229, "宋江"));
+		User user = new User();
+		user.setUserId(2L);
+		user.setUserName("武松");
+		Response response = userController.createUser(user);
 		System.out.println(response);
 	}
 }

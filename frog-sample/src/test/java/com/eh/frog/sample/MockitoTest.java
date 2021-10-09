@@ -6,7 +6,6 @@ package com.eh.frog.sample;
 
 import com.eh.frog.sample.controller.UserController;
 import com.eh.frog.sample.orm.bean.User;
-import com.eh.frog.sample.third.impl.ThirdServiceImpl;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -69,13 +68,16 @@ public class MockitoTest {
 	public void test3() {
 
 		UserController userController = mockUserController();
-		System.out.println(userController.getUser(1));
+		System.out.println(userController.getUser(1L));
 		;
 
 	}
 
 	private UserController mockUserController() {
-		when(mUserController.getUser(1)).thenReturn(new User(1, "宋江"));
+		User user = new User();
+		user.setUserId(1L);
+		user.setUserName("宋江");
+		when(mUserController.getUser(1L)).thenReturn(user);
 		return mUserController;
 	}
 
@@ -122,8 +124,11 @@ public class MockitoTest {
 	@Test
 	public void test6() {
 		UserController userController = mock(UserController.class);
-		when(userController.getUser(any())).thenReturn(new User(2, "武松"));
-		System.out.println(userController.getUser(999));
+		User user = new User();
+		user.setUserId(2L);
+		user.setUserName("武松");
+		when(userController.getUser(any())).thenReturn(user);
+		System.out.println(userController.getUser(999L));
 	}
 
 	/**
@@ -146,7 +151,6 @@ public class MockitoTest {
 		System.out.println(mockedList.get(1)); // 2
 
 	}
-
 
 
 }

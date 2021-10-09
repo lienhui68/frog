@@ -15,5 +15,5 @@ import org.springframework.stereotype.Component;
 public class OrderLionConfig {
 
 	@Getter
-	private static volatile String intentionClosedLoopSwitch = "111";
+	private static volatile Boolean bizSwitch = true;
 }

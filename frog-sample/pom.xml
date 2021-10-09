@@ -37,7 +37,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
-            <version>1.0.18</version>
+            <version>1.1.15</version>
         </dependency>
 
 
@@ -91,7 +91,7 @@
                     <configurationFile>src/main/resources/generatorConfig.xml</configurationFile>
                     <verbose>true</verbose>
                     <!--是否覆盖，单表初创的时候可以覆盖，之后要注意生成器配置里要生成哪些表，切勿覆盖稳定版的表映射-->
-                    <overwrite>false</overwrite>
+                    <overwrite>true</overwrite>
                 </configuration>
                 <executions>
                     <execution>

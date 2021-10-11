@@ -4,8 +4,8 @@
  */
 package com.eh.frog.sample;
 
-import com.eh.frog.sample.lion.OrderLionConfig;
 import com.eh.frog.core.util.FrogFileUtil;
+import com.eh.frog.sample.lion.OrderLionConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
@@ -25,7 +25,7 @@ public class SomeTest {
 	 */
 	@Test
 	public void test1() {
-		LinkedHashMap<String, List<String>> tableSelectKeys = FrogFileUtil.getTableSelectKeys();
+		LinkedHashMap<String, List<String>> tableSelectKeys = FrogFileUtil.getTableSelectKeys("");
 		System.out.println(tableSelectKeys);
 	}
 
@@ -53,6 +53,13 @@ public class SomeTest {
 		modifiersField.setInt(f, f.getModifiers() & ~Modifier.FINAL);
 		f.set(null, false);
 		System.out.println(OrderLionConfig.getBizSwitch());
+	}
+
+	@Test
+	public void test4() {
+		String url2 = this.getClass().getResource("/").toString();
+		System.out.println(System.getProperty("user.dir")
+		);
 	}
 
 }

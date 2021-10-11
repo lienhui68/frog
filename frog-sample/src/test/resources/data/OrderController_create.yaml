@@ -47,7 +47,9 @@ OrderController_create_002: !!com.eh.frog.core.model.PrepareData
   desc: 成功创建订单，优惠开关关闭
   args:
     - desc: 创建订单入参
-      object: !!com.eh.frog.sample.orm.bean.Order { buyerId: 1025229, gmtCreate: null, gmtModified: null, id: null, isValid: null, orderAmount: 225.25, orderId: null, orderStatus: null, orderTime: '2021-10-08 14:37:10' }
+      object: !!com.eh.frog.sample.orm.bean.Order { buyerId: 1025229, gmtCreate: null, gmtModified: null,
+                    id: null, isValid: null, orderAmount: 225.25, orderId: null,
+                    orderStatus: null, orderTime: '2021-10-08 14:37:10' }
   depDataSet:
     - dataObjClazz: com.eh.frog.sample.orm.bean.User
       tableName: tbl_user

@@ -4,7 +4,7 @@
  */
 package com.eh.frog.sample;
 
-import com.eh.frog.core.component.event.MessageEventAdvisorConfig;
+import com.eh.frog.core.component.config.FrogComponentConfiguration;
 import com.eh.frog.sample.base.Response;
 import com.eh.frog.sample.controller.UserController;
 import com.eh.frog.sample.orm.bean.User;
@@ -20,7 +20,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @version 1.0.0: dao.java, v 0.1 2021-09-14 9:11 下午 david Exp $$
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {FrogSampleApplication.class, MessageEventAdvisorConfig.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = {FrogSampleApplication.class, FrogComponentConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserControllerTest {
 	@Autowired
 	private UserMapper userMapper;

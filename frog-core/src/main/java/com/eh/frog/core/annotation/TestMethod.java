@@ -19,6 +19,12 @@ import java.lang.annotation.Target;
 public @interface TestMethod {
 	String[] selected() default {};
 
+	String[] ignored() default {};
+
+	/**
+	 * eg:create(com.eh.frog.sample.orm.bean.Order)
+	 * @return
+	 */
 	String target() default "";
 
 	String fileName() default "";

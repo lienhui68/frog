@@ -8,6 +8,7 @@ import com.eh.frog.core.exception.FrogTestException;
 import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.yaml.DateYamlConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
@@ -24,15 +25,13 @@ import java.util.Properties;
 @Slf4j
 public class FrogFileUtil {
 
-	private static final String DEFAULT_PATH = "/src/test/resources/";
 
-	private static String DIR_PATH = System.getProperty("user.dir");
-
-	public static LinkedHashMap<String, PrepareData> loadFromYaml(String fileName) {
+	public static LinkedHashMap<String, PrepareData> loadFromYaml(String rootFolder, String fileName) {
 		File yamlFile = null;
 		InputStream is;
 		try {
-			yamlFile = getTestResourceFile("/data/" + fileName + ".yaml");
+			String fileFullPath = rootFolder + "/data/" + fileName + ".yaml";
+			yamlFile = new File(fileFullPath);
 			is = new FileInputStream(yamlFile);
 			InputStreamReader reader = new InputStreamReader(is);
 			Yaml yaml = new Yaml(new DateYamlConstructor());
@@ -52,15 +51,9 @@ public class FrogFileUtil {
 		}
 	}
 
-	private static File getTestResourceFile(String fileRelativePath) {
-		String fileFullPath = DIR_PATH + DEFAULT_PATH + fileRelativePath;
-		File file = new File(fileFullPath);
-		return file;
-	}
-
-	public static Properties getGlobalProperties() {
+	public static Properties getGlobalProperties(String rootFolder) {
 		//读取资源配置文件
-		String fileFullPath = DIR_PATH + DEFAULT_PATH + "/config/frog-config.properties";
+		String fileFullPath = rootFolder + "/config/frog-config.properties";
 		File file = new File(fileFullPath);
 		Properties prop;
 		try {
@@ -73,9 +66,9 @@ public class FrogFileUtil {
 		return prop;
 	}
 
-	public static LinkedHashMap<String, List<String>> getTableSelectKeys() {
+	public static LinkedHashMap<String, List<String>> getTableSelectKeys(String rootFolder) {
 		//读取资源配置文件
-		String fileFullPath = DIR_PATH + DEFAULT_PATH + "/config/table_select_key.yaml";
+		String fileFullPath = rootFolder + "/config/table_select_key.yaml";
 
 		File yamlFile = null;
 		InputStream is;

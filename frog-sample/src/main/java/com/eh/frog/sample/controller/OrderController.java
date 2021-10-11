@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 
 @Slf4j
 @AllArgsConstructor
-@RestController("/order")
+@RestController
 public class OrderController {
 
 	// 数据库操作
@@ -34,7 +34,7 @@ public class OrderController {
 	// rpc服务
 	private final CouponRpcService couponRpcService;
 
-	@PostMapping("/create")
+	@PostMapping("/order/create")
 	public Response<Boolean> create(@Param("order") Order order) {
 		// check用户是否存在
 		User user = userMapper.selectByUserId(order.getBuyerId());

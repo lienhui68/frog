@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 import java.lang.reflect.*;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -309,7 +310,7 @@ public class TestUnitHandler {
 		try {
 			log.info("Checking Events");
 			List<VirtualEventGroup> eventGroups = frogRuntimeContext.getPrepareData().getExpectEventSet();
-			if (!eventGroups.isEmpty()) {
+			if (Objects.nonNull(eventGroups) && !eventGroups.isEmpty()) {
 				Map<String, List<Object>> actualEvents = EventContextHolder.getBizEvent();
 				eventGroups.forEach(group -> {
 					List<Object> expectObjs = group.getObjects();
@@ -355,7 +356,7 @@ public class TestUnitHandler {
 	 */
 	public void clearExpectDBData() {
 		try {
-			if (null != frogRuntimeContext.getPrepareData().getDepDataSet()) {
+			if (null != frogRuntimeContext.getPrepareData().getExpectDataSet()) {
 				log.info("Cleaning up DB expectation data...");
 				frogRuntimeContext.getDbDataProcessor().cleanDBData(
 						frogRuntimeContext.getPrepareData().getExpectDataSet());

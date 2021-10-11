@@ -56,11 +56,15 @@ public class ObjectCompareUtil {
 		if (actual == null) {
 			if (expect != null) {
 				throw new FrogCheckException("\n======>actual is null but expect is not null");
+			} else {
+				return;
 			}
 		}
 		if (expect == null) {
 			if (actual != null) {
 				throw new FrogCheckException("\n======>expect is null but actual is not null");
+			} else {
+				return;
 			}
 		}
 
@@ -260,8 +264,8 @@ public class ObjectCompareUtil {
 				} catch (FrogCheckException e) {
 					throw new FrogCheckException("\n======>对象属性比对失败 field:{}, 失败原因:{}", fieldName, e.getMessage());
 				} catch (Exception e) {
-					throw new FrogTestException(fieldName + "object check failed,expected value"
-							+ ObjectUtil.toJson(objExpect) + "actual value"
+					throw new FrogTestException("object check failed, field:" + fieldName + ", expected value:"
+							+ ObjectUtil.toJson(objExpect) + ", actual value:"
 							+ ObjectUtil.toJson(objActual));
 				}
 

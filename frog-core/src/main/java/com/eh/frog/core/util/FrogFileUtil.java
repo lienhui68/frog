@@ -9,15 +9,13 @@ import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.yaml.DateYamlConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
-import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.nodes.NodeId;
-import org.yaml.snakeyaml.nodes.ScalarNode;
+import org.yaml.snakeyaml.introspector.BeanAccess;
 
 import java.io.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author f90fd4n david
@@ -37,7 +35,9 @@ public class FrogFileUtil {
 			yamlFile = getTestResourceFile("/data/" + fileName + ".yaml");
 			is = new FileInputStream(yamlFile);
 			InputStreamReader reader = new InputStreamReader(is);
-			Iterator<Object> iterator = new Yaml(new DateYamlConstructor()).loadAll(reader).iterator();
+			Yaml yaml = new Yaml(new DateYamlConstructor());
+			yaml.setBeanAccess(BeanAccess.FIELD);
+			Iterator<Object> iterator = yaml.loadAll(reader).iterator();
 			LinkedHashMap<String, PrepareData> rawData = (LinkedHashMap<String, PrepareData>) iterator.next();
 			return rawData;
 		} catch (FileNotFoundException e) {
@@ -97,7 +97,6 @@ public class FrogFileUtil {
 			return null;
 		}
 	}
-
 
 
 }

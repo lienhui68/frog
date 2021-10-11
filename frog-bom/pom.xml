@@ -6,14 +6,14 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.eh.frog</groupId>
     <artifactId>frog-bom</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>frog-bom</name>
     <description>frog pom</description>
     <packaging>pom</packaging>
 
     <properties>
-        <frog.core.version>1.0.0</frog.core.version>
-        <frog.util.version>1.0.0</frog.util.version>
+        <frog.core.version>1.0.0-SNAPSHOT</frog.core.version>
+        <frog.util.version>1.0.0-SNAPSHOT</frog.util.version>
     </properties>
 
     <developers>

@@ -16,7 +16,7 @@
     </modules>
 
     <properties>
-        <frog.version>1.0.1</frog.version>
+        <frog.version>1.0.1-SNAPSHOT</frog.version>
     </properties>
 
     <dependencyManagement>

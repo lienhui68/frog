@@ -33,6 +33,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -41,8 +42,6 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
-
-	private static final String DEFAULT_PATH = "/src/test/resources/";
 
 	/**
 	 * case上下文
@@ -75,7 +74,7 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 			return;
 		}
 		// 初始化配置
-		initConfiguration(testBeanAnnotation.dataProvider());
+		initConfiguration();
 		String dsName = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("datasource.bean.name");
 		Assert.assertNotNull(dsName, "数据源名称未配置");
 		// 初始化数据处理器
@@ -83,13 +82,15 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 			dbDataProcessor = new DBDataProcessor(applicationContext.getBean(dsName, DataSource.class));
 		}
 		ReflectionUtil.doWithMethods(this.getClass(), method -> {
+			log.info("开始执行测试类:{},测试方法:{}", testClass.getSimpleName(), method.getName());
 			// 测试方法
 			TestMethod testMethodAnnotation = method.getAnnotation(TestMethod.class);
 			Method testMethod;
 			List<Method> methods = findMethods(method.getName(), testObj);
-			if (methods.size() > 1) {
+			if (methods.size() == 0) {
+				Assert.assertNotNull(testMethodAnnotation.target());
 				// 存在多个同名方法，需要进一步确认
-				testMethod = testObj.getClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
+				testMethod = testObj.getClass().getDeclaredMethod(testMethodAnnotation.target(), method.getParameterTypes());
 			} else if (methods.size() == 1) {
 				testMethod = methods.get(0);
 			} else {
@@ -103,7 +104,15 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 				testFileName = testFacadeSimpleName + "_" + method.getName();
 			}
 			final String tf = testFileName;
-			LinkedHashMap<String, PrepareData> prepareDataMap = FrogFileUtil.loadFromYaml(getRootFolder(testBeanAnnotation.dataProvider()), testFileName);
+			String dataFolder = "data";
+			String dataFolderFromConfig = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("data.model.dir");
+			if (!StringUtils.isEmpty(dataFolderFromConfig)) {
+				dataFolder = dataFolderFromConfig;
+			}
+			LinkedHashMap<String, PrepareData> prepareDataMap = FrogFileUtil.loadFromYaml(dataFolder, testFileName);
+			if (Objects.isNull(prepareDataMap)) {
+				return;
+			}
 			// case过滤
 			List<String> selected = Arrays.asList(testMethodAnnotation.selected()).stream().map(s -> tf + "_" + s).collect(Collectors.toList());
 			List<String> ignored = Arrays.asList(testMethodAnnotation.ignored()).stream().map(s -> tf + "_" + s).collect(Collectors.toList());
@@ -160,11 +169,16 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 		return result;
 	}
 
-	private void initConfiguration(String dataProvider) {
+	private void initConfiguration() {
 		// 全局配置
-		GlobalConfigurationHolder.setGlobalConfiguration(FrogFileUtil.getGlobalProperties(getRootFolder(dataProvider)));
+		GlobalConfigurationHolder.setGlobalConfiguration(FrogFileUtil.getGlobalProperties());
 		// 表selectKeys
-		GlobalConfigurationHolder.setSelectKeys(FrogFileUtil.getTableSelectKeys(getRootFolder(dataProvider)));
+		String dbSelectKeyDir = "config/table_select_key";
+		String dbSelectKeyDirFromConfig = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("db.selectKey.dir");
+		if (!StringUtils.isEmpty(dbSelectKeyDirFromConfig)) {
+			dbSelectKeyDir = dbSelectKeyDirFromConfig;
+		}
+		GlobalConfigurationHolder.setSelectKeys(FrogFileUtil.getTableSelectKeys(dbSelectKeyDir));
 	}
 
 	public void runTest(String caseId, PrepareData prepareData, Object testObj, Method testMethod) {
@@ -311,15 +325,6 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	 */
 	public void afterActsTest(FrogRuntimeContext frogRuntimeContext) {
 
-	}
-
-	private String getRootFolder(String dataProvider) {
-		StringBuilder sb = new StringBuilder(System.getProperty("user.dir"));
-		sb.append(DEFAULT_PATH);
-		if (!StringUtils.isEmpty(dataProvider)) {
-			sb.append(dataProvider);
-		}
-		return sb.toString();
 	}
 
 }

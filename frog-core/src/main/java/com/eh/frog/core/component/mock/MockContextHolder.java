@@ -9,6 +9,7 @@ import org.assertj.core.util.Lists;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author f90fd4n david
@@ -28,6 +29,9 @@ public class MockContextHolder {
 	}
 
 	public static void restore() {
+		if (Objects.isNull(restorePojoLocal.get())) {
+			return;
+		}
 		restorePojoLocal.get().forEach(pojo -> {
 			try {
 				Field f = pojo.getContainer().getClass().getDeclaredField(pojo.getFieldName());

@@ -11,7 +11,7 @@
 
     <groupId>com.eh.frog</groupId>
     <artifactId>frog-core</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

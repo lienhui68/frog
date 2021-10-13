@@ -24,13 +24,6 @@ public @interface TestBean {
 	String value() default "";
 
 	/**
-	 * 测试数据文件、配置文件所在folder
-	 *
-	 * @return
-	 */
-	String dataProvider() default "";
-
-	/**
 	 * 执行的测试方法
 	 *
 	 * @return

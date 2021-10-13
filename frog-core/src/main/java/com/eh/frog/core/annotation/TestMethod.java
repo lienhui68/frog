@@ -22,7 +22,8 @@ public @interface TestMethod {
 	String[] ignored() default {};
 
 	/**
-	 * eg:create(com.eh.frog.sample.orm.bean.Order)
+	 * 用于重载方法时表示原方法名字
+	 *
 	 * @return
 	 */
 	String target() default "";

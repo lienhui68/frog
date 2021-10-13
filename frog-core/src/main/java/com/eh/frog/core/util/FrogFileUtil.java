@@ -8,7 +8,6 @@ import com.eh.frog.core.exception.FrogTestException;
 import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.yaml.DateYamlConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
@@ -26,12 +25,28 @@ import java.util.Properties;
 public class FrogFileUtil {
 
 
-	public static LinkedHashMap<String, PrepareData> loadFromYaml(String rootFolder, String fileName) {
+	private static final String DEFAULT_PATH = "/src/test/resources/";
+
+	private static String DIR_PATH = System.getProperty("user.dir");
+
+	/**
+	 * Based on Test Bundle, Get relative path file from src/test/resources
+	 *
+	 * @param fileRelativePath
+	 * @return
+	 */
+	public static File getTestResourceFile(String fileRelativePath) {
+		String fileFullPath = DIR_PATH + DEFAULT_PATH + fileRelativePath;
+		File file = new File(fileFullPath);
+		return file;
+	}
+
+	public static LinkedHashMap<String, PrepareData> loadFromYaml(String folder, String fileName) {
 		File yamlFile = null;
 		InputStream is;
 		try {
-			String fileFullPath = rootFolder + "/data/" + fileName + ".yaml";
-			yamlFile = new File(fileFullPath);
+			String fileFullPath = folder + "/" + fileName + ".yaml";
+			yamlFile = getTestResourceFile(fileFullPath);
 			is = new FileInputStream(yamlFile);
 			InputStreamReader reader = new InputStreamReader(is);
 			Yaml yaml = new Yaml(new DateYamlConstructor());
@@ -40,21 +55,20 @@ public class FrogFileUtil {
 			LinkedHashMap<String, PrepareData> rawData = (LinkedHashMap<String, PrepareData>) iterator.next();
 			return rawData;
 		} catch (FileNotFoundException e) {
-			log.warn("Can't find file" + yamlFile.getAbsolutePath());
+			log.error("Can't find file:" + yamlFile.getAbsolutePath(), e);
 			return null;
 		} catch (IOException e) {
-			log.warn("IO error" + yamlFile.getAbsolutePath());
+			log.error("IO error:" + yamlFile.getAbsolutePath(), e);
 			return null;
 		} catch (Exception e) {
-			log.error("Wrong file format" + yamlFile.getAbsolutePath(), e);
+			log.error("Wrong file format:" + yamlFile.getAbsolutePath(), e);
 			return null;
 		}
 	}
 
-	public static Properties getGlobalProperties(String rootFolder) {
+	public static Properties getGlobalProperties() {
 		//读取资源配置文件
-		String fileFullPath = rootFolder + "/config/frog-config.properties";
-		File file = new File(fileFullPath);
+		File file = getTestResourceFile("/config/frog-config.properties");
 		Properties prop;
 		try {
 			InputStream is = new FileInputStream(file);
@@ -66,30 +80,27 @@ public class FrogFileUtil {
 		return prop;
 	}
 
-	public static LinkedHashMap<String, List<String>> getTableSelectKeys(String rootFolder) {
+	public static LinkedHashMap<String, List<String>> getTableSelectKeys(String relativeDir) {
 		//读取资源配置文件
-		String fileFullPath = rootFolder + "/config/table_select_key.yaml";
-
-		File yamlFile = null;
 		InputStream is;
+		File yamlFile;
 		try {
-			yamlFile = new File(fileFullPath);
+			yamlFile = getTestResourceFile(relativeDir + ".yaml");
 			is = new FileInputStream(yamlFile);
 			InputStreamReader reader = new InputStreamReader(is);
 			Iterator<Object> iterator = new Yaml().loadAll(reader).iterator();
 			LinkedHashMap<String, List<String>> rawData = (LinkedHashMap<String, List<String>>) iterator.next();
 			return rawData;
 		} catch (FileNotFoundException e) {
-			log.warn("Can't find file" + yamlFile.getAbsolutePath());
+			log.warn("Can't find file:" + relativeDir);
 			return null;
 		} catch (IOException e) {
-			log.warn("IO error" + yamlFile.getAbsolutePath());
+			log.warn("IO error:" + relativeDir);
 			return null;
 		} catch (Exception e) {
-			log.warn("Wrong file format" + yamlFile.getAbsolutePath());
+			log.warn("Wrong file format:" + relativeDir);
 			return null;
 		}
 	}
-
 
 }

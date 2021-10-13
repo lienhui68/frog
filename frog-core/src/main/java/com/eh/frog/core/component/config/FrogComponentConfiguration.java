@@ -21,7 +21,7 @@ public class FrogComponentConfiguration {
 	private static final String pointcut;
 
 	static {
-		pointcut = FrogFileUtil.getGlobalProperties(getRootFolder("")).getProperty("message.event.pointCut");
+		pointcut = FrogFileUtil.getGlobalProperties().getProperty("message.event.pointCut");
 	}
 
 	@Bean

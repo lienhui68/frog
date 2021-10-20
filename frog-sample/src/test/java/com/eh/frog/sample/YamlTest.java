@@ -35,7 +35,7 @@ public class YamlTest {
 		order.setBuyerId(1025229L);
 		order.setOrderAmount(new BigDecimal("225.25"));
 		order.setOrderTime(new Date());
-		args.add(new VirtualObject("入参", order, null));
+//		args.add(new VirtualObject("入参", order));
 		prepareData.setArgs(args);
 		// 消息体
 		OrderEventMessage orderEventMessage = new OrderEventMessage();

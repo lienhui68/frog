@@ -13,7 +13,10 @@ import lombok.Data;
 @Data
 public class VirtualConfigObject {
 	private String desc;
+	// 配置Bean类路径
 	private String container;
+	// 配置项的属性名称
 	private String configField;
+	// 配置项的值
 	private Object configValue;
 }

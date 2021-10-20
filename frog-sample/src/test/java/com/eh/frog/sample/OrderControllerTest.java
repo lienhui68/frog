@@ -4,9 +4,9 @@
  */
 package com.eh.frog.sample;
 
-import com.eh.frog.core.annotation.TestBean;
-import com.eh.frog.core.annotation.TestMethod;
+import com.eh.frog.core.annotation.*;
 import com.eh.frog.core.component.config.FrogComponentConfiguration;
+import com.eh.frog.core.context.FrogRuntimeContext;
 import com.eh.frog.core.template.FrogTestBase;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,5 +23,35 @@ public class OrderControllerTest extends FrogTestBase {
 
 	@TestMethod(selected = {"001", "002"})
 	public void create() {
+	}
+
+	@BeforeClean
+	public void beforeClean(FrogRuntimeContext frogRuntimeContext) {
+		System.out.println("数据清理前执行!!");
+	}
+
+	@AfterClean
+	public void afterClean(FrogRuntimeContext frogRuntimeContext) {
+		System.out.println("数据清理后执行!!");
+	}
+
+	@BeforePrepare
+	public void beforePrepare(FrogRuntimeContext frogRuntimeContext) {
+		System.out.println("数据准备前执行!!");
+	}
+
+	@AfterPrepare
+	public void afterPrepare(FrogRuntimeContext frogRuntimeContext) {
+		System.out.println("数据准备后执行!!");
+	}
+
+	@BeforeCheck
+	public void beforeCheck(FrogRuntimeContext frogRuntimeContext) {
+		System.out.println("数据check前执行!!");
+	}
+
+	@AfterCheck
+	public void afterCheck(FrogRuntimeContext frogRuntimeContext) {
+		System.out.println("数据check之后执行!!");
 	}
 }

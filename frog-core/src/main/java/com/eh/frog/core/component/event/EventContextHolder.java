@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 消息拦截和check基于以下分析
+ * 消息拦截和check逻辑实现基于以下分析
  * * eg连接点格式：xxxSender.send(xxxMessage,...)
  * * why：因为消息中间件组件一般不会直接加载到容器中，一般都是上层bean wrap这个中间件组件，所以连接点各不相同，可以在客户端自行配置连接点
  * * 消息分组按照topicId更合适，但是拦截到bean.sendXxx方法方法时并不知道topic，可以采用Message的class作为分组key，因为topic和Message的1:1，如果多对1则存在自身设计不合理

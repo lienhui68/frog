@@ -17,9 +17,12 @@ import java.util.Map;
  */
 @Data
 public class VirtualEventGroup {
+	//描述
 	private String desc;
+	//消息体类路径
 	private String msgClass;
 	/** flag,<class, <field name, flag value>> */
 	public Map<String, Map<String, String>> flags = new LinkedHashMap<>();
+	//期望消息体内容list
 	private List<Object> objects;
 }

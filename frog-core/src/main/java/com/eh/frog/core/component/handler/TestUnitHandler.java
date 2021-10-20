@@ -76,7 +76,7 @@ public class TestUnitHandler {
 					String target = m.getTarget();
 					Object obj = m.getObject();
 					log.info("mock: {}\n 返回:{}", target, ObjectUtil.toJson(obj));
-					mockBeanService(target, m.getTargetBeanName(), m.getContainer(), m.getFieldName(), obj);
+					mockBeanService(target, m.getContainerBeanName(), m.getTargetBeanName(), m.getContainer(), m.getFieldName(), obj);
 				});
 				// 刷新bean,防止container就是测试对象
 				frogRuntimeContext.setTestedObj(frogRuntimeContext.getApplicationContext().getBean(frogRuntimeContext.getTestedObj().getClass()));
@@ -91,7 +91,7 @@ public class TestUnitHandler {
 		}
 	}
 
-	private void mockBeanService(String target, String targetBeanName, String container, String fieldName, Object obj) {
+	private void mockBeanService(String target, String containerBeanName, String targetBeanName, String container, String fieldName, Object obj) {
 		try {
 			String[] ss = target.split("#");
 			String fullClassName = ss[0];
@@ -108,7 +108,7 @@ public class TestUnitHandler {
 			Method method = Class.forName(ss[0]).getDeclaredMethod(methodName, paramClasses);
 			method.setAccessible(true);
 			// mock
-			mockBeanService(clazz, targetBeanName, container, fieldName, method, obj);
+			mockBeanService(clazz, containerBeanName, targetBeanName, container, fieldName, method, obj);
 		} catch (Exception e) {
 			throw new FrogTestException("解析目标服务出错:" + target, e);
 		}
@@ -124,7 +124,7 @@ public class TestUnitHandler {
 	 * @throws InvocationTargetException
 	 * @throws IllegalAccessException
 	 */
-	private <T> void mockBeanService(Class<T> clazz, String targetBeanName, String container, String fieldName, Method method, T rt) throws InvocationTargetException, IllegalAccessException {
+	private <T> void mockBeanService(Class<T> clazz, String containerBeanName, String targetBeanName, String container, String fieldName, Method method, T rt) throws InvocationTargetException, IllegalAccessException {
 
 		Object target;
 		if (StringUtils.isEmpty(targetBeanName)) {
@@ -143,12 +143,17 @@ public class TestUnitHandler {
 					} else {
 						return method1.invoke(target, args);
 					}
-
 				});
 
 		try {
 			// 获取container
-			Object containerBean = frogRuntimeContext.getApplicationContext().getBean(Class.forName(container));
+			Object containerBean;
+			if (StringUtils.isEmpty(containerBeanName)) {
+				containerBean = frogRuntimeContext.getApplicationContext().getBean(Class.forName(container));
+			} else {
+				containerBean = frogRuntimeContext.getApplicationContext().getBean(containerBeanName);
+			}
+
 			if (StringUtils.isEmpty(fieldName)) {
 				fieldName = clazz.getSimpleName();
 				char[] chars = fieldName.toCharArray();

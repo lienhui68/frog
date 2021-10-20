@@ -35,4 +35,45 @@ public class PrepareData {
 	private List<VirtualMockObject> virtualMockSet;
 	// config center
 	private List<VirtualConfigObject> virtualConfigSet;
+
+	/**
+	 * Gets params.
+	 *
+	 * @return the params
+	 */
+	public Map<String, VirtualObject> getParams() {
+		return virtualParams;
+	}
+
+	/**
+	 * Sets params.
+	 *
+	 * @param params the params
+	 */
+	public void setParams(Map<String, VirtualObject> params) {
+		this.virtualParams = params;
+	}
+
+	/**
+	 * Add param.
+	 *
+	 * @param key the key
+	 * @param obj the obj
+	 */
+	public void addParam(String key, Object obj) {
+		virtualParams.put(key, new VirtualObject(obj));
+	}
+
+	/**
+	 * Gets by para name.
+	 *
+	 * @param paraName the para name
+	 * @return the by para name
+	 */
+	public Object getByParaName(final String paraName) {
+		if (virtualParams == null || null == paraName) {
+			return null;
+		}
+		return virtualParams.get(paraName);
+	}
 }

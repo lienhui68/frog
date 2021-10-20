@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface TestBean {
 	/**
-	 * 测试Bean
+	 * 测试Bean，如果不填则表示容器中的bean名称和xxxTest中的xxx一致
 	 *
 	 * @return
 	 */
@@ -30,7 +30,12 @@ public @interface TestBean {
 	 */
 	String[] selected() default {};
 
-	String[] ignored()  default {};
+	/**
+	 * 不执行某些测试方法，在selected为空时生效
+	 *
+	 * @return
+	 */
+	String[] ignored() default {};
 
 
 }

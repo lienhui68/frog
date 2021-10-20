@@ -4,9 +4,7 @@
  */
 package com.eh.frog.core.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.util.LinkedHashMap;
@@ -17,8 +15,6 @@ import java.util.Map;
  * @version 1.0.0: VirtualObject.java, v 0.1 2021-09-15 2:49 下午 david Exp $$
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @ToString
 public class VirtualObject {
 	// 描述
@@ -28,5 +24,32 @@ public class VirtualObject {
 
 	/** flag,<class, <field name, flag value>> */
 	public Map<String, Map<String, String>> flags = new LinkedHashMap<>();
+
+	/**
+	 * Constructor.
+	 */
+	public VirtualObject() {
+
+	}
+
+	/**
+	 * Constructor.
+	 *
+	 * @param obj the obj
+	 */
+	public VirtualObject(Object obj) {
+		this.object = obj;
+	}
+
+	/**
+	 * Constructor.
+	 *
+	 * @param obj the obj
+	 * @param desc the desc
+	 */
+	public VirtualObject(Object obj, String desc) {
+		this.object = obj;
+		this.desc = desc;
+	}
 
 }

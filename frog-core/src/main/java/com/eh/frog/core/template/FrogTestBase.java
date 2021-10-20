@@ -4,8 +4,7 @@
  */
 package com.eh.frog.core.template;
 
-import com.eh.frog.core.annotation.TestBean;
-import com.eh.frog.core.annotation.TestMethod;
+import com.eh.frog.core.annotation.*;
 import com.eh.frog.core.component.db.DBDataProcessor;
 import com.eh.frog.core.component.event.EventContextHolder;
 import com.eh.frog.core.component.handler.TestUnitHandler;
@@ -16,6 +15,7 @@ import com.eh.frog.core.context.FrogRuntimeContextHolder;
 import com.eh.frog.core.exception.FrogCheckException;
 import com.eh.frog.core.exception.FrogTestException;
 import com.eh.frog.core.model.PrepareData;
+import com.eh.frog.core.util.ClassHelper;
 import com.eh.frog.core.util.FrogFileUtil;
 import com.eh.frog.core.util.ReflectionUtil;
 import com.eh.frog.core.util.StringUtil;
@@ -29,11 +29,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -55,6 +53,10 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 
 	public TestUnitHandler testUnitHandler;
 
+	/**
+	 * annotationMethods map
+	 */
+	public Map<String, List<IFrogMethod>> annotationMethods = new HashMap<>();
 
 	@Test
 	public void test() throws Exception {
@@ -81,6 +83,10 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 		if (dbDataProcessor == null) {
 			dbDataProcessor = new DBDataProcessor(applicationContext.getBean(dsName, DataSource.class));
 		}
+		//annotation init
+		FrogAnnotationFactory annotationFactory = new FrogAnnotationFactory(annotationMethods);
+		Set<Method> allMethod = ClassHelper.getDeclaredAvailableMethods(this.getClass());
+		annotationFactory.initAnnotationMethod(allMethod, this);
 		ReflectionUtil.doWithMethods(this.getClass(), method -> {
 			log.info("开始执行测试类:{},测试方法:{}", testClass.getSimpleName(), method.getName());
 			// 测试方法
@@ -189,7 +195,7 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 		try {
 			initComponentsBeforeTest();
 			// before all tests, the method will be executed
-			beforeActsTest(frogRuntimeContext);
+			beforeFrogTest(frogRuntimeContext);
 			process(frogRuntimeContext);
 			log.info("=============================Execute success, TestCase caseId:" + caseId + " "
 					+ prepareData.getDesc() + "=================");
@@ -202,7 +208,7 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 		} finally {
 			try {
 				// After all tests, the method will be executed
-				afterActsTest(frogRuntimeContext);
+				afterFrogTest(frogRuntimeContext);
 				// clean up thread variable
 				EventContextHolder.clear();
 				MockContextHolder.restore();
@@ -235,11 +241,13 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	public void prepare(FrogRuntimeContext frogRuntimeContext) throws FrogTestException {
 
 		log.info("=============================[frog prepare begin]=============================\r\n");
+		invokeIFrogMethods(BeforePrepare.class, frogRuntimeContext);
 
 		testUnitHandler.prepareDepData();
 		testUnitHandler.prepareMockData();
 		testUnitHandler.prepareConfigData();
 
+		invokeIFrogMethods(AfterPrepare.class, frogRuntimeContext);
 		log.info("=============================[frog prepare end]=============================\r\n");
 	}
 
@@ -260,12 +268,14 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	public void check(FrogRuntimeContext frogRuntimeContext) throws FrogTestException {
 
 		log.info("=============================[frog check begin]=============================\r\n");
+		invokeIFrogMethods(BeforeCheck.class, frogRuntimeContext);
 
 		testUnitHandler.checkException();
 		testUnitHandler.checkExpectDbData();
 		testUnitHandler.checkExpectEvent();
 		testUnitHandler.checkExpectResult();
 
+		invokeIFrogMethods(AfterCheck.class, frogRuntimeContext);
 		log.info("=============================[frog check end]=============================\r\n");
 	}
 
@@ -275,9 +285,12 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	 */
 	public void clear(FrogRuntimeContext frogRuntimeContext) throws FrogTestException {
 		log.info("=============================[frog clear begin]=============================\r\n");
+		invokeIFrogMethods(BeforeClean.class, frogRuntimeContext);
 
 		testUnitHandler.clearDepData();
 		testUnitHandler.clearExpectDBData();
+
+		invokeIFrogMethods(AfterClean.class, frogRuntimeContext);
 
 		log.info("=============================[frog clear end]=============================\r\n");
 	}
@@ -314,7 +327,7 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	 *
 	 * @param frogRuntimeContext
 	 */
-	public void beforeActsTest(FrogRuntimeContext frogRuntimeContext) {
+	public void beforeFrogTest(FrogRuntimeContext frogRuntimeContext) {
 
 	}
 
@@ -323,8 +336,26 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	 *
 	 * @param frogRuntimeContext
 	 */
-	public void afterActsTest(FrogRuntimeContext frogRuntimeContext) {
+	public void afterFrogTest(FrogRuntimeContext frogRuntimeContext) {
 
+	}
+
+	/**
+	 *
+	 * @param clsz
+	 * @param frogRuntimeContext
+	 */
+	public void invokeIFrogMethods(Class<? extends Annotation> clsz,
+	                               FrogRuntimeContext frogRuntimeContext) {
+		List<IFrogMethod> list = this.annotationMethods.get(clsz.getSimpleName());
+
+		if (list == null) {
+			return;
+		}
+
+		for (IFrogMethod method : list) {
+			method.invoke(frogRuntimeContext);
+		}
 	}
 
 }

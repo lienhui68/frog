@@ -17,22 +17,24 @@ import com.eh.frog.core.exception.FrogTestException;
 import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.util.ClassHelper;
 import com.eh.frog.core.util.FrogFileUtil;
-import com.eh.frog.core.util.ReflectionUtil;
 import com.eh.frog.core.util.StringUtil;
+import com.tngtech.java.junit.dataprovider.DataProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.Before;
 import org.springframework.beans.BeansException;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author f90fd4n david
@@ -54,95 +56,106 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	public TestUnitHandler testUnitHandler;
 
 	/**
+	 * caseId and data preparation
+	 */
+	protected static Map<String, PrepareData> prepareDatas = new HashMap<>();
+
+	/**
 	 * annotationMethods map
 	 */
 	public Map<String, List<IFrogMethod>> annotationMethods = new HashMap<>();
 
-	@Test
-	public void test() throws Exception {
-		final Class testClass = this.getClass();
-		// 测试Bean
-		final TestBean testBeanAnnotation = (TestBean) testClass.getAnnotation(TestBean.class);
-		String beanName = testBeanAnnotation.value();
-		String testFacadeSimpleName = testClass.getSimpleName().replace("Test", "");
-		if (StringUtils.isEmpty(beanName)) {
-			beanName = StringUtil.lowerFirstCase(testFacadeSimpleName);
-		}
-		final Object testObj;
+	/**
+	 * annotationFactory
+	 */
+	protected FrogAnnotationFactory annotationFactory;
+
+	@Before
+	public void setUp() throws Exception {
 		try {
-			testObj = applicationContext.getBean(beanName);
+			// 初始化配置
+			initConfiguration();
+			String dsName = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("datasource.bean.name");
+			Assert.assertNotNull(dsName, "数据源名称未配置");
+			// 初始化数据处理器
+			if (dbDataProcessor == null) {
+				dbDataProcessor = new DBDataProcessor(applicationContext.getBean(dsName, DataSource.class));
+			}
+			//annotation init
+			if (annotationFactory == null) {
+				annotationFactory = new FrogAnnotationFactory(annotationMethods);
+				Set<Method> allMethod = ClassHelper.getDeclaredAvailableMethods(this.getClass());
+				annotationFactory.initAnnotationMethod(allMethod, this);
+			}
 		} catch (BeansException e) {
-			log.error("there is no test bean in the container with name:{}", beanName, e);
-			return;
+			log.error("Exception raised during setup process");
+			throw new RuntimeException(e);
 		}
-		// 初始化配置
-		initConfiguration();
-		String dsName = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("datasource.bean.name");
-		Assert.assertNotNull(dsName, "数据源名称未配置");
-		// 初始化数据处理器
-		if (dbDataProcessor == null) {
-			dbDataProcessor = new DBDataProcessor(applicationContext.getBean(dsName, DataSource.class));
+	}
+
+	public static void getTestData(String testFacadeSimpleName, String testedMethodName) {
+		// 加载测试数据
+		String testFileName = testFacadeSimpleName + "_" + testedMethodName;
+		String dataFolder = "data";
+		String dataFolderFromConfig = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("data.model.dir");
+		if (!StringUtils.isEmpty(dataFolderFromConfig)) {
+			dataFolder = dataFolderFromConfig;
 		}
-		//annotation init
-		FrogAnnotationFactory annotationFactory = new FrogAnnotationFactory(annotationMethods);
-		Set<Method> allMethod = ClassHelper.getDeclaredAvailableMethods(this.getClass());
-		annotationFactory.initAnnotationMethod(allMethod, this);
-		ReflectionUtil.doWithMethods(this.getClass(), method -> {
-			log.info("开始执行测试类:{},测试方法:{}", testClass.getSimpleName(), method.getName());
+		prepareDatas = FrogFileUtil.loadFromYaml(dataFolder, testFileName);
+	}
+
+	/**
+	 * Frog DataProvider
+	 *
+	 * @param method
+	 * @return
+	 * @throws IOException
+	 */
+	@DataProvider
+	public static Iterator<Object[]> dataProvider(Method method) throws IOException {
+		try {
+			testMethod = method;
+			String testedMethodName = method.getName();
+			final Class testClass = method.getDeclaringClass();
+			String testFacadeSimpleName = testClass.getSimpleName().replace("Test", "");
 			// 测试方法
-			TestMethod testMethodAnnotation = method.getAnnotation(TestMethod.class);
-			Method testMethod;
-			List<Method> methods = findMethods(method.getName(), testObj);
-			if (methods.size() == 0) {
-				Assert.assertNotNull(testMethodAnnotation.target());
-				// 存在多个同名方法，需要进一步确认
-				testMethod = testObj.getClass().getDeclaredMethod(testMethodAnnotation.target(), method.getParameterTypes());
-			} else if (methods.size() == 1) {
-				testMethod = methods.get(0);
+			OverloadHandler overloadHandlerAnnotation = method.getAnnotation(OverloadHandler.class);
+			getTestData(testFacadeSimpleName, testedMethodName);
+			if (CollectionUtils.isEmpty(prepareDatas)) {
+				return null;
+			}
+			List<Object[]> prepareDataList = Lists.newArrayList();
+			String rexStr = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("test_only");
+			if (org.apache.commons.lang.StringUtils.isBlank(rexStr)) {
+				rexStr = ".*";
 			} else {
-				log.error("No concrete bean method mapping to this test method，test class:{}, test method:{}", testClass.getSimpleName(), method.getName());
-				return;
+				rexStr = rexStr + ".*";
 			}
-			testMethod.setAccessible(true);
-			// 加载测试数据
-			String testFileName = testMethodAnnotation.fileName();
-			if (StringUtils.isEmpty(testFileName)) {
-				testFileName = testFacadeSimpleName + "_" + method.getName();
-			}
-			final String tf = testFileName;
-			String dataFolder = "data";
-			String dataFolderFromConfig = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("data.model.dir");
-			if (!StringUtils.isEmpty(dataFolderFromConfig)) {
-				dataFolder = dataFolderFromConfig;
-			}
-			LinkedHashMap<String, PrepareData> prepareDataMap = FrogFileUtil.loadFromYaml(dataFolder, testFileName);
-			if (Objects.isNull(prepareDataMap)) {
-				return;
-			}
-			// case过滤
-			List<String> selected = Arrays.asList(testMethodAnnotation.selected()).stream().map(s -> tf + "_" + s).collect(Collectors.toList());
-			List<String> ignored = Arrays.asList(testMethodAnnotation.ignored()).stream().map(s -> tf + "_" + s).collect(Collectors.toList());
-			// 执行case
-			prepareDataMap.forEach((caseId, prepareData) -> {
-				if ((CollectionUtils.isEmpty(selected) && !ignored.contains(caseId)) || selected.contains(caseId)) {
-					runTest(caseId, prepareData, testObj, testMethod);
-				}
-			});
-		}, (method) -> {
-			TestMethod testMethod = method.getAnnotation(TestMethod.class);
-			List<String> methodSelected = Arrays.asList(testBeanAnnotation.selected());
-			List<String> ignoredMethods = Arrays.asList(testBeanAnnotation.ignored());
-			if (testMethod != null) {
-				if (CollectionUtils.isEmpty(methodSelected)) {
-					if (!ignoredMethods.contains(method.getName())) {
-						return true;
+			log.info("Run cases matching regex: [" + rexStr + "]");
+			Pattern pattern = Pattern.compile(rexStr);
+			// 排序
+			TreeMap<String, PrepareData> treeMap;
+			treeMap = new TreeMap<>(
+					Comparator.naturalOrder());
+			treeMap.putAll(prepareDatas);
+			for (String caseId : treeMap.keySet()) {
+				if (prepareDatas.get(caseId).getDesc() != null) {
+					Matcher matcher = pattern.matcher(prepareDatas.get(caseId).getDesc());
+					if (!matcher.find()) {
+						log.info("[" + prepareDatas.get(caseId).getDesc()
+								+ "] does not match [" + rexStr + "], skip it");
+						continue;
 					}
-				} else if (methodSelected.contains(method.getName())) {
-					return true;
 				}
+				String desc = prepareDatas.get(caseId).getDesc();
+				desc = (desc == null) ? "" : desc;
+				Object[] args = new Object[]{caseId, desc, prepareDatas.get(caseId)};
+				prepareDataList.add(args);
 			}
-			return false;
-		});
+			return prepareDataList.iterator();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 
@@ -153,9 +166,7 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	 * @param testedObj
 	 * @return
 	 */
-	private List<Method> findMethods(String methodName, Object testedObj) {
-
-		List<Method> result = Lists.newArrayList();
+	private Method findMethod(String methodName, Object testedObj) {
 		Class clazz = testedObj.getClass();
 		if (clazz != null) {
 			while (clazz != null && !clazz.equals(Object.class)) {
@@ -165,17 +176,20 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 					for (Method method : methods) {
 						if (method != null
 								&& org.apache.commons.lang.StringUtils.equalsIgnoreCase(method.getName(), methodName)) {
-							result.add(method);
+							return method;
 						}
 					}
 				}
 				clazz = clazz.getSuperclass();
 			}
 		}
-		return result;
+		return null;
 	}
 
 	private void initConfiguration() {
+		if (Objects.nonNull(GlobalConfigurationHolder.getGlobalConfiguration())) {
+			return;
+		}
 		// 全局配置
 		GlobalConfigurationHolder.setGlobalConfiguration(FrogFileUtil.getGlobalProperties());
 		// 表selectKeys
@@ -187,12 +201,12 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 		GlobalConfigurationHolder.setSelectKeys(FrogFileUtil.getTableSelectKeys(dbSelectKeyDir));
 	}
 
-	public void runTest(String caseId, PrepareData prepareData, Object testObj, Method testMethod) {
+	public void runTest(String caseId, PrepareData prepareData) {
 		log.info("\n=============================Start executing, TestCase caseId:" + caseId + " "
 				+ prepareData.getDesc() + "=================");
-		initRuntimeContext(caseId, prepareData, testObj, testMethod);
-		initTestUnitHandler();
 		try {
+			initRuntimeContext(caseId, prepareData);
+			initTestUnitHandler();
 			initComponentsBeforeTest();
 			// before all tests, the method will be executed
 			beforeFrogTest(frogRuntimeContext);
@@ -302,9 +316,52 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	 * @param caseId
 	 * @param prepareData
 	 */
-	public void initRuntimeContext(String caseId, PrepareData prepareData, Object testObj, Method testMethod) {
+	public void initRuntimeContext(String caseId, PrepareData prepareData) throws Exception {
+		Object testObj = getTestedObj();
+		Method testMethod = getTestedMethod(testObj);
+
 		frogRuntimeContext = new FrogRuntimeContext(caseId, prepareData, testMethod, testObj, dbDataProcessor, applicationContext);
 		FrogRuntimeContextHolder.setContext(frogRuntimeContext);
+	}
+
+	private Method getTestedMethod(Object testObj) throws Exception {
+		// 测试方法
+		OverloadHandler overloadHandlerAnnotation = testMethod.getAnnotation(OverloadHandler.class);
+		Method method;
+		if (Objects.isNull(overloadHandlerAnnotation) || StringUtils.isEmpty(overloadHandlerAnnotation.target())) {
+			String methodName = testMethod.getName();
+			method = findMethod(methodName, testObj);
+		} else {
+			Class clazz = testObj.getClass();
+			String methodName = overloadHandlerAnnotation.target();
+			String[] params = overloadHandlerAnnotation.params().split(",");
+			Class[] paramClasses = new Class[params.length];
+			for (int i = 0; i < params.length; i++) {
+				paramClasses[i] = Class.forName(params[i]);
+			}
+			method = clazz.getMethod(methodName, paramClasses);
+		}
+		method.setAccessible(true);
+		return method;
+	}
+
+	private Object getTestedObj() {
+		final Class testClass = getClass();
+		// 测试Bean
+		final TestBean testBeanAnnotation = (TestBean) testClass.getAnnotation(TestBean.class);
+		String beanName = testBeanAnnotation.value();
+		String testFacadeSimpleName = testClass.getSimpleName().replace("Test", "");
+		if (StringUtils.isEmpty(beanName)) {
+			beanName = StringUtil.lowerFirstCase(testFacadeSimpleName);
+		}
+		final Object testObj;
+		try {
+			testObj = applicationContext.getBean(beanName);
+		} catch (BeansException e) {
+			log.error("there is no test bean in the container with name:{}", beanName, e);
+			throw new RuntimeException(e);
+		}
+		return testObj;
 	}
 
 	/**

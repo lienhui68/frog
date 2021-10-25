@@ -7,7 +7,11 @@ package com.eh.frog.sample;
 import com.eh.frog.core.annotation.*;
 import com.eh.frog.core.component.config.FrogComponentConfiguration;
 import com.eh.frog.core.context.FrogRuntimeContext;
+import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.template.FrogTestBase;
+import com.tngtech.java.junit.dataprovider.DataProviderRunner;
+import com.tngtech.java.junit.dataprovider.UseDataProvider;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -16,13 +20,15 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author f90fd4n david
  * @version 1.0.0: dao.java, v 0.1 2021-09-14 9:11 下午 david Exp $$
  */
-@RunWith(SpringRunner.class)
+@RunWith(DataProviderRunner.class)
 @SpringBootTest(classes = {FrogSampleApplication.class, FrogComponentConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestBean
 public class OrderControllerTest extends FrogTestBase {
 
-	@TestMethod(selected = {"001", "002"})
-	public void create() {
+	@Test
+	@UseDataProvider("dataProvider")
+	public void create(String caseId, String desc, PrepareData prepareData) {
+		runTest(caseId, prepareData);
 	}
 
 	@Override

@@ -15,20 +15,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface TestMethod {
-	/**
-	 * 执行选中的测试用例，eg:001,002
-	 *
-	 * @return
-	 */
-	String[] selected() default {};
-
-	/**
-	 * 不执行部分测试用例，在selected为空时生效
-	 *
-	 * @return
-	 */
-	String[] ignored() default {};
+public @interface OverloadHandler {
 
 	/**
 	 * 用于重载方法时表示原方法名字
@@ -39,9 +26,9 @@ public @interface TestMethod {
 	String target() default "";
 
 	/**
-	 * 测试数据文件名，一般使用默认即可
+	 * 重载方法参数
 	 *
 	 * @return
 	 */
-	String fileName() default "";
+	String params() default "";
 }

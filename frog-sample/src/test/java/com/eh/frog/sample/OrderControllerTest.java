@@ -25,6 +25,16 @@ public class OrderControllerTest extends FrogTestBase {
 	public void create() {
 	}
 
+	@Override
+	public void beforeFrogTest(FrogRuntimeContext frogRuntimeContext) {
+		System.out.println("process前执行!!");
+	}
+
+	@Override
+	public void afterFrogTest(FrogRuntimeContext frogRuntimeContext) {
+		System.out.println("process后执行!!");
+	}
+
 	@BeforeClean
 	public void beforeClean(FrogRuntimeContext frogRuntimeContext) {
 		System.out.println("数据清理前执行!!");

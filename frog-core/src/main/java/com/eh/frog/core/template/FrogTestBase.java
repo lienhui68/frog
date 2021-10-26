@@ -70,27 +70,29 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	 */
 	protected FrogAnnotationFactory annotationFactory;
 
+	private Method testMethod;
+
 	@Before
 	public void setUp() throws Exception {
-		try {
-			// 初始化配置
-			initConfiguration();
-			String dsName = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("datasource.bean.name");
-			Assert.assertNotNull(dsName, "数据源名称未配置");
-			// 初始化数据处理器
-			if (dbDataProcessor == null) {
-				dbDataProcessor = new DBDataProcessor(applicationContext.getBean(dsName, DataSource.class));
-			}
-			//annotation init
-			if (annotationFactory == null) {
-				annotationFactory = new FrogAnnotationFactory(annotationMethods);
-				Set<Method> allMethod = ClassHelper.getDeclaredAvailableMethods(this.getClass());
-				annotationFactory.initAnnotationMethod(allMethod, this);
-			}
-		} catch (BeansException e) {
-			log.error("Exception raised during setup process");
-			throw new RuntimeException(e);
-		}
+//		try {
+//			// 初始化配置
+//			initConfiguration();
+//			String dsName = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("datasource.bean.name");
+//			Assert.assertNotNull(dsName, "数据源名称未配置");
+//			// 初始化数据处理器
+//			if (dbDataProcessor == null) {
+//				dbDataProcessor = new DBDataProcessor(applicationContext.getBean(dsName, DataSource.class));
+//			}
+//			//annotation init
+//			if (annotationFactory == null) {
+//				annotationFactory = new FrogAnnotationFactory(annotationMethods);
+//				Set<Method> allMethod = ClassHelper.getDeclaredAvailableMethods(this.getClass());
+//				annotationFactory.initAnnotationMethod(allMethod, this);
+//			}
+//		} catch (BeansException e) {
+//			log.error("Exception raised during setup process");
+//			throw new RuntimeException(e);
+//		}
 	}
 
 	public static void getTestData(String testFacadeSimpleName, String testedMethodName) {
@@ -112,7 +114,7 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	 * @throws IOException
 	 */
 	@DataProvider
-	public static Iterator<Object[]> dataProvider(Method method) throws IOException {
+	public Iterator<Object[]> dataProvider(Method method) throws IOException {
 		try {
 			testMethod = method;
 			String testedMethodName = method.getName();

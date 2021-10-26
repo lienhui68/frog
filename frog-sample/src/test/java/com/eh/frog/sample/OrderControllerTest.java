@@ -9,12 +9,12 @@ import com.eh.frog.core.component.config.FrogComponentConfiguration;
 import com.eh.frog.core.context.FrogRuntimeContext;
 import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.template.FrogTestBase;
+import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author f90fd4n david
@@ -26,9 +26,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class OrderControllerTest extends FrogTestBase {
 
 	@Test
-	@UseDataProvider("dataProvider")
+	@UseDataProvider("orderDataProvider")
 	public void create(String caseId, String desc, PrepareData prepareData) {
 		runTest(caseId, prepareData);
+	}
+
+	@DataProvider
+	public static Object[][] orderDataProvider() {
+
+		return new Object[][]{{"", "", new PrepareData()}};
 	}
 
 	@Override

@@ -4,11 +4,14 @@
  */
 package com.eh.frog.core.util;
 
+import com.eh.frog.core.config.FrogConfig;
+import com.eh.frog.core.enums.YamlSerializeMode;
 import com.eh.frog.core.exception.FrogTestException;
 import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.yaml.DateYamlConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
 import java.io.*;
@@ -24,6 +27,7 @@ import java.util.Properties;
 @Slf4j
 public class FrogFileUtil {
 
+	private static final String CONFIG_FILE_PATH = "config/frog.yaml";
 
 	private static final String DEFAULT_PATH = "/src/test/resources/";
 
@@ -41,7 +45,7 @@ public class FrogFileUtil {
 		return file;
 	}
 
-	public static LinkedHashMap<String, PrepareData> loadFromYaml(String folder, String fileName) {
+	public static LinkedHashMap<String, PrepareData> loadPrepareDataFromYaml(String folder, String fileName) {
 		File yamlFile = null;
 		InputStream is;
 		try {
@@ -65,6 +69,80 @@ public class FrogFileUtil {
 			return null;
 		}
 	}
+
+	public static FrogConfig loadGlobalConfigFromYaml() {
+		File yamlFile = null;
+		InputStream is;
+		try {
+			yamlFile = getTestResourceFile(CONFIG_FILE_PATH);
+			is = new FileInputStream(yamlFile);
+			InputStreamReader reader = new InputStreamReader(is);
+			Yaml yaml = new Yaml(new Constructor(FrogConfig.class));
+			yaml.setBeanAccess(BeanAccess.FIELD);
+			FrogConfig frogConfig = yaml.load(reader);
+			return frogConfig;
+		} catch (FileNotFoundException e) {
+			log.error("Can't find file:" + yamlFile.getAbsolutePath(), e);
+			return null;
+		} catch (IOException e) {
+			log.error("IO error:" + yamlFile.getAbsolutePath(), e);
+			return null;
+		} catch (Exception e) {
+			log.error("Wrong file format:" + yamlFile.getAbsolutePath(), e);
+			return null;
+		}
+	}
+
+	/**
+	 * @param path
+	 * @param fileContent
+	 * @return
+	 */
+	public static boolean writeNewFile(String path, String fileContent) {
+		return writeFile(path, fileContent, null);
+	}
+
+	/**
+	 * @param path
+	 * @param fileContent
+	 * @param mode
+	 * @return
+	 */
+	public static boolean writeFile(String path, String fileContent, YamlSerializeMode mode) {
+		File file = getTestResourceFile(path);
+		try {
+			if (file.exists()) {
+				switch (mode) {
+					case SKIP:
+						log.debug("File already exists, skip");
+						return true;
+					case APPEND:
+						log.debug("The file already exists, add a separator to continue writing");
+						fileContent = "\n\n========================================================================\n\n"
+								+ fileContent;
+						break;
+					case CREATE:
+						log.debug("File already exists, delete and rewrite");
+						file.delete();
+						file.createNewFile();
+						break;
+					default:
+						return false;
+				}
+			} else {
+				file.createNewFile();
+			}
+			Writer writer = new OutputStreamWriter(new FileOutputStream(file, true), "UTF-8");
+			writer.write(fileContent);
+			writer.close();
+			log.debug("written successfully");
+			return true;
+		} catch (Exception e) {
+			log.error("written failed", e);
+			return false;
+		}
+	}
+
 
 	public static Properties getGlobalProperties() {
 		//读取资源配置文件

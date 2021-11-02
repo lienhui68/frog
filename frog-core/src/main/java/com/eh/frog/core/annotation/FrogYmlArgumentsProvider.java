@@ -5,6 +5,7 @@
 package com.eh.frog.core.annotation;
 
 import com.eh.frog.core.config.GlobalConfigurationHolder;
+import com.eh.frog.core.constants.FrogConfigConstants;
 import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.util.FrogFileUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +49,7 @@ public class FrogYmlArgumentsProvider implements ArgumentsProvider, AnnotationCo
 				return Stream.empty();
 			}
 			List<Object[]> prepareDataList = Lists.newArrayList();
-			String rexStr = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("test_only");
+			String rexStr = GlobalConfigurationHolder.getGlobalConfiguration().get(FrogConfigConstants.TEST_ONLY);
 			if (org.apache.commons.lang.StringUtils.isBlank(rexStr)) {
 				rexStr = ".*";
 			} else {
@@ -83,8 +84,8 @@ public class FrogYmlArgumentsProvider implements ArgumentsProvider, AnnotationCo
 
 	private LinkedHashMap<String, PrepareData> getTestData(Class testClass, String testedMethodName) {
 		LinkedHashMap<String, PrepareData> datas = new LinkedHashMap<>();
-		String dataFolder = "data";
-		String dataFolderFromConfig = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("data.model.dir");
+		String dataFolder = FrogConfigConstants.DEFAULT_TEST_DATA_FOLDER;
+		String dataFolderFromConfig = GlobalConfigurationHolder.getGlobalConfiguration().get(FrogConfigConstants.TEST_DATA_FOLDER);
 		if (!StringUtils.isEmpty(dataFolderFromConfig)) {
 			dataFolder = dataFolderFromConfig;
 		}
@@ -92,7 +93,7 @@ public class FrogYmlArgumentsProvider implements ArgumentsProvider, AnnotationCo
 			String testFacadeSimpleName = testClass.getSimpleName().replace("Test", "");
 			// 加载测试数据
 			String testFileName = testFacadeSimpleName + "_" + testedMethodName;
-			datas = FrogFileUtil.loadFromYaml(dataFolder, testFileName);
+			datas = FrogFileUtil.loadPrepareDataFromYaml(dataFolder, testFileName);
 		} else {
 			// 从指定yaml文件中提取用例
 			for (String f : yamlFiles) {
@@ -102,7 +103,7 @@ public class FrogYmlArgumentsProvider implements ArgumentsProvider, AnnotationCo
 				} else if (f.endsWith(".yml")) {
 					filename = f.replace(".yml", "");
 				}
-				datas.putAll(FrogFileUtil.loadFromYaml(dataFolder, filename));
+				datas.putAll(FrogFileUtil.loadPrepareDataFromYaml(dataFolder, filename));
 			}
 		}
 		return datas;

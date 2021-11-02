@@ -9,7 +9,9 @@ import com.eh.frog.core.component.db.DBDataProcessor;
 import com.eh.frog.core.component.event.EventContextHolder;
 import com.eh.frog.core.component.handler.TestUnitHandler;
 import com.eh.frog.core.component.mock.MockContextHolder;
+import com.eh.frog.core.config.FrogConfig;
 import com.eh.frog.core.config.GlobalConfigurationHolder;
+import com.eh.frog.core.constants.FrogConfigConstants;
 import com.eh.frog.core.context.FrogRuntimeContext;
 import com.eh.frog.core.context.FrogRuntimeContextHolder;
 import com.eh.frog.core.exception.FrogCheckException;
@@ -18,6 +20,7 @@ import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.util.ClassHelper;
 import com.eh.frog.core.util.FrogFileUtil;
 import com.eh.frog.core.util.StringUtil;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -75,7 +78,7 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 		try {
 			// 初始化配置
 			initConfiguration();
-			String dsName = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("datasource.bean.name");
+			String dsName = GlobalConfigurationHolder.getGlobalConfiguration().get(FrogConfigConstants.DATASOURCE_BEAN_NAME);
 			Assertions.assertNotNull(dsName, "数据源名称未配置");
 			// 初始化数据处理器
 			if (dbDataProcessor == null) {
@@ -121,15 +124,19 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 		if (Objects.nonNull(GlobalConfigurationHolder.getGlobalConfiguration())) {
 			return;
 		}
-		// 全局配置
-		GlobalConfigurationHolder.setGlobalConfiguration(FrogFileUtil.getGlobalProperties());
-		// 表selectKeys
-		String dbSelectKeyDir = "config/table_select_key";
-		String dbSelectKeyDirFromConfig = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("db.selectKey.dir");
-		if (!StringUtils.isEmpty(dbSelectKeyDirFromConfig)) {
-			dbSelectKeyDir = dbSelectKeyDirFromConfig;
+		FrogConfig frogConfig = FrogFileUtil.loadGlobalConfigFromYaml();
+		if (Objects.isNull(frogConfig)) {
+			throw new FrogTestException("全局配置文件");
 		}
-		GlobalConfigurationHolder.setSelectKeys(FrogFileUtil.getTableSelectKeys(dbSelectKeyDir));
+		// 全局配置
+		frogConfig.getBaseConfig().ifPresent(GlobalConfigurationHolder::setGlobalConfiguration);
+		// 表selectKeys
+		final Map<String, List<String>> selectKeys = Maps.newHashMap();
+		frogConfig.getTableQueryConfig().ifPresent(tableQueryConfig -> {
+			tableQueryConfig.getCommonTableQueryConfig().ifPresent(commonTableQueryConfig -> selectKeys.put(FrogConfigConstants.FROG_VIRTUAL_COMMON_TABLE, commonTableQueryConfig));
+			tableQueryConfig.getSpecialTableQueryConfig().ifPresent(specialTableQueryConfig -> selectKeys.putAll(specialTableQueryConfig));
+		});
+		GlobalConfigurationHolder.setSelectKeys(selectKeys);
 	}
 
 	public void runTest(String caseId, PrepareData prepareData) {

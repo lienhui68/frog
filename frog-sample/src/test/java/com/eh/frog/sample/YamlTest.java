@@ -4,12 +4,15 @@
  */
 package com.eh.frog.sample;
 
+import com.eh.frog.core.config.FrogConfig;
 import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.model.VirtualEventGroup;
 import com.eh.frog.core.model.VirtualObject;
+import com.eh.frog.core.util.FrogFileUtil;
 import com.eh.frog.sample.enums.OrderEventType;
 import com.eh.frog.sample.mq.model.OrderEventMessage;
 import com.eh.frog.sample.orm.bean.Order;
+import com.eh.frog.util.FrogSerializationSupporter;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
@@ -62,5 +65,15 @@ public class YamlTest {
 		Yaml yaml = new Yaml(options);
 		Object load = yaml.load(dateYaml);
 		System.out.println(load);
+	}
+
+	/**
+	 * 初始化配置文件
+	 */
+//	@Test
+	public void test3() {
+//		FrogSerializationSupporter.initConfigFile();
+		FrogConfig frogConfig = FrogFileUtil.loadGlobalConfigFromYaml();
+		System.out.println();
 	}
 }

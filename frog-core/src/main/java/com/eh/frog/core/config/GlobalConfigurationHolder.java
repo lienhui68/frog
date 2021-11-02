@@ -4,9 +4,12 @@
  */
 package com.eh.frog.core.config;
 
+import com.eh.frog.core.constants.FrogConfigConstants;
+import org.junit.jupiter.api.Assertions;
+import org.springframework.util.CollectionUtils;
+
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * @author f90fd4n david
@@ -14,7 +17,7 @@ import java.util.Properties;
  */
 public class GlobalConfigurationHolder {
 
-	public static ThreadLocal<Properties> globalConfigurationThreadLocal = new ThreadLocal<>();
+	public static ThreadLocal<Map<String, String>> globalConfigurationThreadLocal = new ThreadLocal<>();
 
 	/**
 	 * 表名,清除时依据的keys
@@ -26,7 +29,7 @@ public class GlobalConfigurationHolder {
 	 *
 	 * @return the configuration
 	 */
-	public static Properties getGlobalConfiguration() {
+	public static Map<String, String> getGlobalConfiguration() {
 		return globalConfigurationThreadLocal.get();
 	}
 
@@ -35,16 +38,21 @@ public class GlobalConfigurationHolder {
 	 *
 	 * @param globalConfiguration
 	 */
-	public static void setGlobalConfiguration(Properties globalConfiguration) {
+	public static void setGlobalConfiguration(Map<String, String> globalConfiguration) {
 		globalConfigurationThreadLocal.set(globalConfiguration);
-	}
-
-	public static Map<String, List<String>> getSelectKeys() {
-		return selectKeysThreadLocal.get();
 	}
 
 	public static void setSelectKeys(Map<String, List<String>> selectKeys) {
 		selectKeysThreadLocal.set(selectKeys);
+	}
+
+	public static List<String> getSelectKeys(String tableName) {
+		Assertions.assertNotNull(tableName);
+		List<String> selectKeys = selectKeysThreadLocal.get().get(tableName);
+		if (CollectionUtils.isEmpty(selectKeys)) {
+			selectKeys = selectKeysThreadLocal.get().get(FrogConfigConstants.FROG_VIRTUAL_COMMON_TABLE);
+		}
+		return selectKeys;
 	}
 
 }

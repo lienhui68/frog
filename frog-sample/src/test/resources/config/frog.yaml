@@ -1,0 +1,10 @@
+baseConfig:
+  messageEventPoi: execution(public * com.eh.frog.sample.mq.producer.*Sender.send*(..))
+  datasourceBeanName: dataSource
+  prepareRunBackFill: false
+  testDataFolder: data
+#  testOnly: ^T
+tableQueryConfig:
+  commonTableQueryConfig: [ user_id ]
+  specialTableQueryConfig:
+    tbl_order: [ buyer_id ]

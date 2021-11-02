@@ -5,6 +5,7 @@
 package com.eh.frog.core.component.db;
 
 import com.eh.frog.core.config.GlobalConfigurationHolder;
+import com.eh.frog.core.constants.FrogConfigConstants;
 import com.eh.frog.core.exception.FrogCheckException;
 import com.eh.frog.core.exception.FrogTestException;
 import com.eh.frog.core.model.VirtualTable;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.assertj.core.util.Lists;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.CollectionUtils;
 
 import javax.sql.DataSource;
 import java.text.ParseException;
@@ -122,7 +124,7 @@ public class DBDataProcessor {
 				throw new FrogTestException("数据格式非法,需要清理数据但是表名为空");
 			}
 			// 获取表明对应的查询keys
-			List<String> selectKeys = GlobalConfigurationHolder.getSelectKeys().get(tableName);
+			List<String> selectKeys = GlobalConfigurationHolder.getSelectKeys(tableName);
 			// 生成delete sql
 			String sql = genDeleteSql(tableName, selectKeys);
 			//Assembly parameter and execution sql
@@ -196,7 +198,7 @@ public class DBDataProcessor {
 
 		//Where condition ,Only the default query conditions are supported first
 		StringBuffer wherePartBuffer = new StringBuffer();
-		List<String> selectKeys = GlobalConfigurationHolder.getSelectKeys().get(tableName);
+		List<String> selectKeys = GlobalConfigurationHolder.getSelectKeys(tableName);
 
 		for (String selectKey : selectKeys) {
 			wherePartBuffer.append("(" + selectKey + " = ? " + " ) and ");
@@ -220,7 +222,7 @@ public class DBDataProcessor {
 		List<Map<String, Object>> expects = table.getTableData();
 
 		//The actual value of the placeholder in the select statement
-		List<String> selectKeys = GlobalConfigurationHolder.getSelectKeys().get(table.getTableName());
+		List<String> selectKeys = GlobalConfigurationHolder.getSelectKeys(table.getTableName());
 
 		// 分组
 		// k:selectKey1_selectKey2, v:list

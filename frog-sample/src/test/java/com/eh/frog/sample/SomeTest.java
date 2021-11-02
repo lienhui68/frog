@@ -7,7 +7,7 @@ package com.eh.frog.sample;
 import com.eh.frog.core.util.FrogFileUtil;
 import com.eh.frog.sample.lion.OrderLionConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

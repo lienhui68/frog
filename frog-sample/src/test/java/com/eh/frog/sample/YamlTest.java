@@ -12,7 +12,7 @@ import com.eh.frog.sample.mq.model.OrderEventMessage;
 import com.eh.frog.sample.orm.bean.Order;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Lists;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 

@@ -18,30 +18,28 @@ import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.util.ClassHelper;
 import com.eh.frog.core.util.FrogFileUtil;
 import com.eh.frog.core.util.StringUtil;
-import com.tngtech.java.junit.dataprovider.DataProvider;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.util.Lists;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.BeansException;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
-import org.springframework.util.CollectionUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author f90fd4n david
  * @version 1.0.0: FrogTestBase.java, v 0.1 2021-09-15 12:49 上午 david Exp $$
  */
 @Slf4j
-public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public abstract class FrogTestBase implements ApplicationContextAware {
 
 	/**
 	 * case上下文
@@ -56,11 +54,6 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	public TestUnitHandler testUnitHandler;
 
 	/**
-	 * caseId and data preparation
-	 */
-	protected static Map<String, PrepareData> prepareDatas = new HashMap<>();
-
-	/**
 	 * annotationMethods map
 	 */
 	public Map<String, List<IFrogMethod>> annotationMethods = new HashMap<>();
@@ -70,97 +63,33 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	 */
 	protected FrogAnnotationFactory annotationFactory;
 
-	private Method testMethod;
-
-	@Before
-	public void setUp() throws Exception {
-//		try {
-//			// 初始化配置
-//			initConfiguration();
-//			String dsName = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("datasource.bean.name");
-//			Assert.assertNotNull(dsName, "数据源名称未配置");
-//			// 初始化数据处理器
-//			if (dbDataProcessor == null) {
-//				dbDataProcessor = new DBDataProcessor(applicationContext.getBean(dsName, DataSource.class));
-//			}
-//			//annotation init
-//			if (annotationFactory == null) {
-//				annotationFactory = new FrogAnnotationFactory(annotationMethods);
-//				Set<Method> allMethod = ClassHelper.getDeclaredAvailableMethods(this.getClass());
-//				annotationFactory.initAnnotationMethod(allMethod, this);
-//			}
-//		} catch (BeansException e) {
-//			log.error("Exception raised during setup process");
-//			throw new RuntimeException(e);
-//		}
-	}
-
-	public static void getTestData(String testFacadeSimpleName, String testedMethodName) {
-		// 加载测试数据
-		String testFileName = testFacadeSimpleName + "_" + testedMethodName;
-		String dataFolder = "data";
-		String dataFolderFromConfig = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("data.model.dir");
-		if (!StringUtils.isEmpty(dataFolderFromConfig)) {
-			dataFolder = dataFolderFromConfig;
-		}
-		prepareDatas = FrogFileUtil.loadFromYaml(dataFolder, testFileName);
-	}
-
 	/**
-	 * Frog DataProvider
-	 *
-	 * @param method
-	 * @return
-	 * @throws IOException
+	 * The {@link ApplicationContext} that was injected into this test instance
+	 * via {@link #setApplicationContext(ApplicationContext)}.
 	 */
-	@DataProvider
-	public Iterator<Object[]> dataProvider(Method method) throws IOException {
+	@Nullable
+	protected ApplicationContext applicationContext;
+
+	@BeforeAll
+	public void setUp() throws Exception {
 		try {
-			testMethod = method;
-			String testedMethodName = method.getName();
-			final Class testClass = method.getDeclaringClass();
-			String testFacadeSimpleName = testClass.getSimpleName().replace("Test", "");
-			// 测试方法
-			OverloadHandler overloadHandlerAnnotation = method.getAnnotation(OverloadHandler.class);
-			getTestData(testFacadeSimpleName, testedMethodName);
-			if (CollectionUtils.isEmpty(prepareDatas)) {
-				return null;
+			// 初始化配置
+			initConfiguration();
+			String dsName = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("datasource.bean.name");
+			Assertions.assertNotNull(dsName, "数据源名称未配置");
+			// 初始化数据处理器
+			if (dbDataProcessor == null) {
+				dbDataProcessor = new DBDataProcessor(applicationContext.getBean(dsName, DataSource.class));
 			}
-			List<Object[]> prepareDataList = Lists.newArrayList();
-			String rexStr = GlobalConfigurationHolder.getGlobalConfiguration().getProperty("test_only");
-			if (org.apache.commons.lang.StringUtils.isBlank(rexStr)) {
-				rexStr = ".*";
-			} else {
-				rexStr = rexStr + ".*";
-			}
-			log.info("Run cases matching regex: [" + rexStr + "]");
-			Pattern pattern = Pattern.compile(rexStr);
-			// 排序
-			TreeMap<String, PrepareData> treeMap;
-			treeMap = new TreeMap<>(
-					Comparator.naturalOrder());
-			treeMap.putAll(prepareDatas);
-			for (String caseId : treeMap.keySet()) {
-				if (prepareDatas.get(caseId).getDesc() != null) {
-					Matcher matcher = pattern.matcher(prepareDatas.get(caseId).getDesc());
-					if (!matcher.find()) {
-						log.info("[" + prepareDatas.get(caseId).getDesc()
-								+ "] does not match [" + rexStr + "], skip it");
-						continue;
-					}
-				}
-				String desc = prepareDatas.get(caseId).getDesc();
-				desc = (desc == null) ? "" : desc;
-				Object[] args = new Object[]{caseId, desc, prepareDatas.get(caseId)};
-				prepareDataList.add(args);
-			}
-			return prepareDataList.iterator();
-		} catch (Exception e) {
+			//annotation init
+			annotationFactory = new FrogAnnotationFactory(annotationMethods);
+			Set<Method> allMethod = ClassHelper.getDeclaredAvailableMethods(this.getClass());
+			annotationFactory.initAnnotationMethod(allMethod, this);
+		} catch (BeansException e) {
+			log.error("Exception raised during setup process");
 			throw new RuntimeException(e);
 		}
 	}
-
-
 	/**
 	 * Obtain the tested method of the tested object
 	 *
@@ -207,7 +136,8 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 		log.info("\n=============================Start executing, TestCase caseId:" + caseId + " "
 				+ prepareData.getDesc() + "=================");
 		try {
-			initRuntimeContext(caseId, prepareData);
+			String testMethodName = Thread.currentThread().getStackTrace()[2].getMethodName();
+			initRuntimeContext(caseId, prepareData, testMethodName);
 			initTestUnitHandler();
 			initComponentsBeforeTest();
 			// before all tests, the method will be executed
@@ -317,16 +247,28 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	 *
 	 * @param caseId
 	 * @param prepareData
+	 * @param testMethodName
 	 */
-	public void initRuntimeContext(String caseId, PrepareData prepareData) throws Exception {
+	public void initRuntimeContext(String caseId, PrepareData prepareData, String testMethodName) throws Exception {
 		Object testObj = getTestedObj();
-		Method testMethod = getTestedMethod(testObj);
+		Method testMethod = getTestedMethod(testObj, getTestMethod(testMethodName));
 
 		frogRuntimeContext = new FrogRuntimeContext(caseId, prepareData, testMethod, testObj, dbDataProcessor, applicationContext);
 		FrogRuntimeContextHolder.setContext(frogRuntimeContext);
 	}
 
-	private Method getTestedMethod(Object testObj) throws Exception {
+	private Method getTestMethod(String testMethodName) {
+		Class<?> clz = getClass();
+		try {
+			Method m = clz.getDeclaredMethod(testMethodName, String.class, String.class, PrepareData.class);
+			return m;
+		} catch (NoSuchMethodException e) {
+			log.error("there is no test method in the test class with name:{}", testMethodName, e);
+			throw new RuntimeException(e);
+		}
+	}
+
+	private Method getTestedMethod(Object testObj, Method testMethod) throws Exception {
 		// 测试方法
 		OverloadHandler overloadHandlerAnnotation = testMethod.getAnnotation(OverloadHandler.class);
 		Method method;
@@ -350,10 +292,12 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 	private Object getTestedObj() {
 		final Class testClass = getClass();
 		// 测试Bean
+		String beanName;
 		final TestBean testBeanAnnotation = (TestBean) testClass.getAnnotation(TestBean.class);
-		String beanName = testBeanAnnotation.value();
 		String testFacadeSimpleName = testClass.getSimpleName().replace("Test", "");
-		if (StringUtils.isEmpty(beanName)) {
+		if (Objects.nonNull(testBeanAnnotation) && !StringUtils.isEmpty(testBeanAnnotation.value())) {
+			beanName = testBeanAnnotation.value();
+		} else {
 			beanName = StringUtil.lowerFirstCase(testFacadeSimpleName);
 		}
 		final Object testObj;
@@ -415,6 +359,17 @@ public abstract class FrogTestBase extends AbstractJUnit4SpringContextTests {
 		for (IFrogMethod method : list) {
 			method.invoke(frogRuntimeContext);
 		}
+	}
+
+	/**
+	 * Set the {@link ApplicationContext} to be used by this test instance,
+	 * provided via {@link ApplicationContextAware} semantics.
+	 *
+	 * @param applicationContext the ApplicationContext that this test runs in
+	 */
+	@Override
+	public final void setApplicationContext(final ApplicationContext applicationContext) {
+		this.applicationContext = applicationContext;
 	}
 
 }

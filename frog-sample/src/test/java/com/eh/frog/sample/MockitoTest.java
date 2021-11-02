@@ -4,19 +4,6 @@
  */
 package com.eh.frog.sample;
 
-import com.eh.frog.sample.controller.UserController;
-import com.eh.frog.sample.orm.bean.User;
-import org.junit.Rule;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-
-import java.util.LinkedList;
-import java.util.List;
-
-import static org.mockito.Mockito.*;
-
 /**
  * @author f90fd4n david
  * @version 1.0.0: MockitoTest.java, v 0.1 2021-09-18 9:52 上午 david Exp $$

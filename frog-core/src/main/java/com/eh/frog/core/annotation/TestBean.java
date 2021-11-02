@@ -23,19 +23,4 @@ public @interface TestBean {
 	 */
 	String value() default "";
 
-	/**
-	 * 执行的测试方法
-	 *
-	 * @return
-	 */
-	String[] selected() default {};
-
-	/**
-	 * 不执行某些测试方法，在selected为空时生效
-	 *
-	 * @return
-	 */
-	String[] ignored() default {};
-
-
 }

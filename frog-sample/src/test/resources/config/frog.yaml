@@ -4,7 +4,14 @@ baseConfig:
   prepareRunBackFill: false
   testDataFolder: data
 #  testOnly: ^T
+  postProcessClean: true
 tableQueryConfig:
   commonTableQueryConfig: [ user_id ]
   specialTableQueryConfig:
     tbl_order: [ buyer_id ]
+extensionConfig:
+  frog-cluster-redis-plugin:
+    host: 10.13.65.179
+    port: 6392
+    maxIdle: 10
+    maxTotal: 50

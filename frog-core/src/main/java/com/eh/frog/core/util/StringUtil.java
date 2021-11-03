@@ -36,4 +36,34 @@ public class StringUtil {
 		chars[0] -= 32;
 		return String.valueOf(chars);
 	}
+
+	public static String buildMessage(String format, Object... params) {
+		if (format == null) {
+			throw new NullPointerException("format");
+		}
+		StringBuilder sb = new StringBuilder();
+		final String delimiter = "{}"; //定界符
+		int i = 0;
+		if (params != null) {
+			for (; ; ) {
+				int tmpIndex = format.indexOf(delimiter);
+				if (tmpIndex == -1) {//不存在赋值
+					sb.append(format);
+					break;
+				} else {//存在则进行赋值拼接
+					String str = format.substring(0, tmpIndex);
+					format = format.substring(tmpIndex + 2);
+					String valStr = params[i++].toString();
+					sb.append(str).append(valStr);
+				}
+			}
+		} else {//param为空时
+			sb.append(format);
+		}
+		return sb.toString();
+	}
+
+	public static void main(String[] args) {
+		System.out.println(buildMessage("插件:{}执行init出错", "Name"));
+	}
 }

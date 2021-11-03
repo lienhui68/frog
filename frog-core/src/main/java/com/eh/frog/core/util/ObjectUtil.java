@@ -29,10 +29,8 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * @author jie.peng
- * @version $Id: ObjectUtil.java, v 0.1 2015-04-07 jie.peng 下午08:32:28  Exp $
+ * @author david
  */
-@SuppressWarnings("unchecked")
 public class ObjectUtil {
 
 	private static final Log log = LogFactory.getLog(ObjectUtil.class);

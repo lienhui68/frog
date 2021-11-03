@@ -22,7 +22,7 @@ import java.lang.annotation.*;
 		since = "5.0"
 )
 @ArgumentsSource(FrogYmlArgumentsProvider.class)
-@ParameterizedTest(name = "[{index}] [{0}]，[{1}]")
+@ParameterizedTest(name = "[{index}] {0} / {1}")
 public @interface FrogTest {
 	String[] value() default {};
 }

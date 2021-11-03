@@ -21,7 +21,9 @@ public class NotEmptyPointcutCondition implements Condition {
 		final String[] pointcut = new String[1];
 		FrogFileUtil.loadGlobalConfigFromYaml().getBaseConfig().ifPresent(baseConfig -> {
 			pointcut[0] = baseConfig.get(FrogConfigConstants.MESSAGE_EVENT_POI);
-			System.getProperties().setProperty(FrogConfigConstants.MESSAGE_EVENT_POINTCUT_KEY, pointcut[0]);
+			if (StringUtils.isNotEmpty(pointcut[0])) {
+				System.getProperties().setProperty(FrogConfigConstants.MESSAGE_EVENT_POINTCUT_KEY, pointcut[0]);
+			}
 		});
 
 		// 非空

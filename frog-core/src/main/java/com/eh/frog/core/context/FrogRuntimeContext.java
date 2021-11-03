@@ -6,10 +6,12 @@ package com.eh.frog.core.context;
 
 import com.eh.frog.core.component.db.DBDataProcessor;
 import com.eh.frog.core.model.PrepareData;
+import com.eh.frog.core.model.VirtualObject;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * @author f90fd4n david
@@ -66,7 +68,6 @@ public class FrogRuntimeContext {
 		this.testedMethod = testedMethod;
 		this.testedObj = testedObj;
 		this.applicationContext = applicationContext;
-
 	}
 
 }

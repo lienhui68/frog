@@ -13,6 +13,7 @@
         <module>frog-core</module>
         <module>frog-util</module>
         <module>frog-bom</module>
+        <module>frog-plugin</module>
     </modules>
 
     <properties>

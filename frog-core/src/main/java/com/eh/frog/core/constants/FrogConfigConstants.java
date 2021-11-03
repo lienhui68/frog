@@ -35,17 +35,21 @@ public final class FrogConfigConstants {
 	 * 筛选用例执行
 	 */
 	public static final String TEST_ONLY = "testOnly";
-
 	/**
-	 * 表查询字段 虚拟设置,用来映射通用表查询字段
+	 * 是否执行后置清理
 	 */
-	public static final String FROG_VIRTUAL_COMMON_TABLE = "frog_virtual_common";
+	public static final String POST_PROCESS_CLEAN = "postProcessClean";
+
 
 	//==================默认值===============//
 	/**
 	 * 测试数据文件夹相对路径默认值
 	 */
 	public static final String DEFAULT_TEST_DATA_FOLDER = "data";
+	/**
+	 * 表查询字段 虚拟设置,用来映射通用表查询字段
+	 */
+	public static final String FROG_VIRTUAL_COMMON_TABLE = "frog_virtual_common";
 
 	//==================环境配置===============//
 	/**

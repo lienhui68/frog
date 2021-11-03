@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author f90fd4n david
@@ -24,6 +25,8 @@ public class GlobalConfigurationHolder {
 	 */
 	public static ThreadLocal<Map<String, List<String>>> selectKeysThreadLocal = new ThreadLocal<>();
 
+	public static ThreadLocal<Map<String, Map<String, Object>>> extensionConfigThreadLocal = new ThreadLocal<>();
+
 	/**
 	 * Gets configuration.
 	 *
@@ -32,6 +35,7 @@ public class GlobalConfigurationHolder {
 	public static Map<String, String> getGlobalConfiguration() {
 		return globalConfigurationThreadLocal.get();
 	}
+
 
 	/**
 	 * Sets configuration.
@@ -55,4 +59,12 @@ public class GlobalConfigurationHolder {
 		return selectKeys;
 	}
 
+	public static Optional<Map<String, Map<String, Object>>> getExtensionConfig() {
+		Map<String, Map<String, Object>> configMap = extensionConfigThreadLocal.get();
+		return Optional.ofNullable(configMap);
+	}
+
+	public static void setExtensionConfig(Map<String, Map<String, Object>> extensionConfig) {
+		extensionConfigThreadLocal.set(extensionConfig);
+	}
 }

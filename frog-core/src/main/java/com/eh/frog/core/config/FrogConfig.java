@@ -26,12 +26,22 @@ public class FrogConfig {
 
 	private TableQueryConfig tableQueryConfig;
 
+	/**
+	 * 扩展配置
+	 * <来源标识,<k,v>>
+	 */
+	Map<String, Map<String, Object>> extensionConfig;
+
 	public Optional<Map<String, String>> getBaseConfig() {
 		return Optional.ofNullable(baseConfig);
 	}
 
 	public Optional<TableQueryConfig> getTableQueryConfig() {
 		return Optional.ofNullable(tableQueryConfig);
+	}
+
+	public Optional<Map<String, Map<String, Object>>> getExtensionConfig() {
+		return Optional.ofNullable(extensionConfig);
 	}
 
 	/**

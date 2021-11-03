@@ -16,6 +16,8 @@
  */
 package com.eh.frog.core.exception;
 
+import com.eh.frog.core.util.StringUtil;
+
 /**
  * Test abnormal base class, exception declaration in the framework must inherit this interface
  *
@@ -62,42 +64,11 @@ public class FrogTestException extends RuntimeException {
 	}
 
 	public FrogTestException(String format, Object... params) {
-		this(buildMessage(format, params));
-	}
-
-	private static String buildMessage(String format, Object... params) {
-		if (format == null) {
-			throw new NullPointerException("format");
-		}
-		StringBuilder sb = new StringBuilder();
-		final String delimiter = "{}"; //定界符
-		int cnt = 0; //括号出现的计数值
-		if (params != null) {
-			for (int i = 0; i < params.length; i++) {
-				int tmpIndex = format.indexOf(delimiter);
-				if (tmpIndex == -1) {//不存在赋值
-					if (cnt == 0) {
-						sb.append(format);
-					}
-					break;
-				} else {//存在则进行赋值拼接
-					String str = format.substring(0, tmpIndex);
-					format = format.substring(tmpIndex + 2);
-					String valStr = params[i].toString();
-					sb.append(str)
-							.append(valStr);
-					cnt++;
-
-				}
-			}
-		} else {//param为空时
-			sb.append(format);
-		}
-		return sb.toString();
+		this(StringUtil.buildMessage(format, params));
 	}
 
 	public static void main(String[] args) {
-		System.out.println(buildMessage("Hello{}, world{}", 1, 2));
+		System.out.println(StringUtil.buildMessage("Hello{}, world{}", 1, 2));
 	}
 
 }

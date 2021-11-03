@@ -17,11 +17,13 @@ import com.eh.frog.core.context.FrogRuntimeContextHolder;
 import com.eh.frog.core.exception.FrogCheckException;
 import com.eh.frog.core.exception.FrogTestException;
 import com.eh.frog.core.model.PrepareData;
+import com.eh.frog.core.plugin.PersistencePlugin;
 import com.eh.frog.core.util.ClassHelper;
 import com.eh.frog.core.util.FrogFileUtil;
 import com.eh.frog.core.util.StringUtil;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -29,6 +31,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.Nullable;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
@@ -54,6 +57,9 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 	 */
 	public static DBDataProcessor dbDataProcessor;
 
+	/**
+	 * execute unit for case
+	 */
 	public TestUnitHandler testUnitHandler;
 
 	/**
@@ -73,6 +79,11 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 	@Nullable
 	protected ApplicationContext applicationContext;
 
+	/**
+	 * 持久化插件
+	 */
+	private List<PersistencePlugin> persistencePlugins;
+
 	@BeforeAll
 	public void setUp() throws Exception {
 		try {
@@ -88,11 +99,16 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 			annotationFactory = new FrogAnnotationFactory(annotationMethods);
 			Set<Method> allMethod = ClassHelper.getDeclaredAvailableMethods(this.getClass());
 			annotationFactory.initAnnotationMethod(allMethod, this);
+			//Load the initial persistence plugins
+			loadInitialPersistencePlugin();
+			//init plugin
+			initPersistencePlugin();
 		} catch (BeansException e) {
 			log.error("Exception raised during setup process");
 			throw new RuntimeException(e);
 		}
 	}
+
 	/**
 	 * Obtain the tested method of the tested object
 	 *
@@ -136,6 +152,8 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 			tableQueryConfig.getCommonTableQueryConfig().ifPresent(commonTableQueryConfig -> selectKeys.put(FrogConfigConstants.FROG_VIRTUAL_COMMON_TABLE, commonTableQueryConfig));
 			tableQueryConfig.getSpecialTableQueryConfig().ifPresent(specialTableQueryConfig -> selectKeys.putAll(specialTableQueryConfig));
 		});
+		// 扩展配置
+		frogConfig.getExtensionConfig().ifPresent(GlobalConfigurationHolder::setExtensionConfig);
 		GlobalConfigurationHolder.setSelectKeys(selectKeys);
 	}
 
@@ -153,11 +171,14 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 			log.info("=============================Execute success, TestCase caseId:" + caseId + " "
 					+ prepareData.getDesc() + "=================");
 		} catch (FrogCheckException fe) {
-			log.error("case数据校验失败,id:{},失败原因:{}", caseId, fe.getMessage());
+			String err = StringUtil.buildMessage("case数据校验失败,id:{},失败原因:{}", caseId, fe.getMessage());
+			throw new AssertionError(err, fe);
 		} catch (FrogTestException fe) {
-			log.error("case执行发生错误,id:{},错误原因:{}", caseId, fe.getMessage(), fe);
+			String err = StringUtil.buildMessage("case执行发生错误,id:{},错误原因:{}", caseId, fe.getMessage());
+			throw new AssertionError(err, fe);
 		} catch (Throwable t) {
-			log.error("case执行发生系统错误,id:{}", caseId, t);
+			String err = StringUtil.buildMessage("case执行发生系统错误,id:{}", caseId);
+			throw new AssertionError(err, t);
 		} finally {
 			try {
 				// After all tests, the method will be executed
@@ -166,9 +187,11 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 				EventContextHolder.clear();
 				MockContextHolder.restore();
 			} catch (FrogTestException fe) {
-				log.error("case执行发生错误,id:{},错误原因:{}", caseId, fe.getMessage(), fe);
+				String err = StringUtil.buildMessage("case执行发生错误,id:{},错误原因:{}", caseId, fe.getMessage());
+				throw new AssertionError(err, fe);
 			} catch (Throwable t) {
-				log.error("case执行发生系统错误,id:{}", caseId, t);
+				String err = StringUtil.buildMessage("case执行发生系统错误,id:{}", caseId);
+				throw new AssertionError(err, t);
 			}
 		}
 	}
@@ -185,6 +208,12 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 		execute(frogRuntimeContext);
 		// check
 		check(frogRuntimeContext);
+		// 后置清理
+		String postProcessCleanStr = GlobalConfigurationHolder.getGlobalConfiguration().get(FrogConfigConstants.POST_PROCESS_CLEAN);
+		boolean postProcessClean = Boolean.parseBoolean(postProcessCleanStr);
+		if (postProcessClean) {
+			clear(frogRuntimeContext);
+		}
 	}
 
 	/**
@@ -199,6 +228,7 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 		testUnitHandler.prepareDepData();
 		testUnitHandler.prepareMockData();
 		testUnitHandler.prepareConfigData();
+		doPersistencePluginPrepare();
 
 		invokeIFrogMethods(AfterPrepare.class, frogRuntimeContext);
 		log.info("=============================[frog prepare end]=============================\r\n");
@@ -210,7 +240,11 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 	 */
 	public void execute(FrogRuntimeContext frogRuntimeContext) throws FrogTestException {
 		log.info("=============================[frog execute begin]=============================\r\n");
+		invokeIFrogMethods(BeforeExecute.class, frogRuntimeContext);
+
 		testUnitHandler.execute();
+
+		invokeIFrogMethods(AfterExecute.class, frogRuntimeContext);
 		log.info("=============================[frog execute end]=============================\r\n");
 	}
 
@@ -227,6 +261,7 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 		testUnitHandler.checkExpectDbData();
 		testUnitHandler.checkExpectEvent();
 		testUnitHandler.checkExpectResult();
+		doPersistencePluginCheck();
 
 		invokeIFrogMethods(AfterCheck.class, frogRuntimeContext);
 		log.info("=============================[frog check end]=============================\r\n");
@@ -242,6 +277,7 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 
 		testUnitHandler.clearDepData();
 		testUnitHandler.clearExpectDBData();
+		doPersistencePluginClean();
 
 		invokeIFrogMethods(AfterClean.class, frogRuntimeContext);
 
@@ -315,6 +351,103 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 			throw new RuntimeException(e);
 		}
 		return testObj;
+	}
+
+	private void loadInitialPersistencePlugin() {
+		persistencePlugins = Lists.newArrayList();
+		final EnablePlugin enablePlugin = (EnablePlugin) this.getClass().getAnnotation(EnablePlugin.class);
+		if (Objects.isNull(enablePlugin)) {
+			return;
+		}
+
+		PluginSignature[] value = enablePlugin.value();
+		if (Objects.isNull(value)) {
+			return;
+		}
+
+		Arrays.stream(value).forEach(ps -> {
+			if (PersistencePlugin.class.equals(ps.type())) {
+				Class<?>[] plugins = ps.plugins();
+				if (Objects.isNull(plugins)) {
+					return;
+				}
+				Arrays.stream(plugins).forEach(p -> {
+					try {
+						persistencePlugins.add((PersistencePlugin) p.newInstance());
+					} catch (Exception e) {
+						String err = StringUtil.buildMessage("插件:{}执行init出错", p.getClass().getSimpleName());
+						throw new FrogTestException(err, e);
+					}
+				});
+			}
+		});
+	}
+
+	private void initPersistencePlugin() {
+		persistencePlugins.forEach(p -> {
+			try {
+				final Map<String, Object>[] pluginConfig = new Map[]{Maps.newHashMap()};
+				Optional<Map<String, Map<String, Object>>> extensionConfigOpt = GlobalConfigurationHolder.getExtensionConfig();
+				extensionConfigOpt.ifPresent(extensionConfig -> {
+					Map<String, Object> pluginConfigFromYaml = extensionConfig.get(p.getPluginSymbol());
+					if (!CollectionUtils.isEmpty(pluginConfigFromYaml)) {
+						pluginConfig[0] = pluginConfigFromYaml;
+					}
+				});
+				p.init(pluginConfig[0]);
+			} catch (Throwable t) {
+				String err = StringUtil.buildMessage("插件:{}执行init出错", p.getClass().getSimpleName());
+				throw new FrogTestException(err, t);
+			}
+		});
+	}
+
+	private void doPersistencePluginPrepare() {
+		persistencePlugins.forEach(p -> {
+			try {
+				Map<String, Object> pluginParams = frogRuntimeContext.getPrepareData().getPluginParams();
+				if (Objects.nonNull(pluginParams)) {
+					p.prepare(Optional.of(pluginParams.get(p.getPluginSymbol())));
+				} else {
+					p.prepare(Optional.empty());
+				}
+			} catch (Throwable t) {
+				String err = StringUtil.buildMessage("插件:{}执行prepare出错", p.getClass().getSimpleName());
+				throw new FrogTestException(err, t);
+			}
+		});
+	}
+
+	private void doPersistencePluginCheck() {
+		persistencePlugins.forEach(p -> {
+			try {
+				Map<String, Object> pluginParams = frogRuntimeContext.getPrepareData().getPluginParams();
+				if (Objects.nonNull(pluginParams)) {
+					p.check(Optional.of(pluginParams.get(p.getPluginSymbol())));
+				} else {
+					p.check(Optional.empty());
+				}
+			} catch (Throwable t) {
+				String err = StringUtil.buildMessage("插件:{}执行check出错", p.getClass().getSimpleName());
+				throw new FrogTestException(err, t);
+			}
+		});
+	}
+
+	private void doPersistencePluginClean() {
+		persistencePlugins.forEach(p -> {
+			try {
+				Map<String, Object> pluginParams = frogRuntimeContext.getPrepareData().getPluginParams();
+				if (Objects.nonNull(pluginParams)) {
+					p.clean(Optional.of(pluginParams.get(p.getPluginSymbol())));
+				} else {
+					p.clean(Optional.empty());
+				}
+			} catch (Throwable t) {
+				String err = StringUtil.buildMessage("插件:{}执行clean出错", p.getClass().getSimpleName());
+				throw new FrogTestException(err, t);
+			}
+		});
 	}
 
 	/**

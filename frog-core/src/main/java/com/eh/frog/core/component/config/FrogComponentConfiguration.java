@@ -4,15 +4,13 @@
  */
 package com.eh.frog.core.component.config;
 
-import com.eh.frog.core.annotation.NotEmptyPointcutCondition;
+import com.eh.frog.core.annotation.FrogConditionalOnProperty;
 import com.eh.frog.core.component.event.MessageEventAdvice;
 import com.eh.frog.core.constants.FrogConfigConstants;
+import com.eh.frog.core.util.FrogFileUtil;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 
 /**
  * @author f90fd4n david
@@ -21,14 +19,12 @@ import org.springframework.core.env.Environment;
 @Configuration
 public class FrogComponentConfiguration {
 
-	@Autowired
-	private Environment environment;
-
-	@Conditional(NotEmptyPointcutCondition.class)
+	@FrogConditionalOnProperty(FrogConfigConstants.MESSAGE_EVENT_POI)
 	@Bean
 	public AspectJExpressionPointcutAdvisor messageAdvisor() {
 		AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
-		advisor.setExpression(environment.getProperty(FrogConfigConstants.MESSAGE_EVENT_POINTCUT_KEY));
+		String pointcut = FrogFileUtil.loadGlobalConfigFromYaml().getBaseConfig().get().get(FrogConfigConstants.MESSAGE_EVENT_POI);
+		advisor.setExpression(pointcut);
 		advisor.setAdvice(new MessageEventAdvice());
 		return advisor;
 	}

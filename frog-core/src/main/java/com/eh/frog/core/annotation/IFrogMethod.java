@@ -18,7 +18,7 @@ public interface IFrogMethod {
 	/**
 	 * Invoke.
 	 *
-	 * @param frogRuntimeContext the acts runtime context
+	 * @param frogRuntimeContext the frog runtime context
 	 */
 	void invoke(FrogRuntimeContext frogRuntimeContext);
 

@@ -23,7 +23,7 @@ public class FrogRuntimeContextHolder {
 	/**
 	 * Sets context.
 	 *
-	 * @param frogRuntimeContext the acts runtime context
+	 * @param frogRuntimeContext the frog runtime context
 	 */
 	public static void setContext(FrogRuntimeContext frogRuntimeContext) {
 		context.set(frogRuntimeContext);

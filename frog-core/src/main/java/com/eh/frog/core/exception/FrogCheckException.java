@@ -20,21 +20,21 @@ package com.eh.frog.core.exception;
  * Test abnormal base class, exception declaration in the framework must inherit this interface
  *
  * @author dasong.jds
- * @version $Id: ActsException.java, v 0.1 2015年4月19日 下午9:07:58 dasong.jds Exp $
+ * @version $Id: FrogException.java, v 0.1 2015年4月19日 下午9:07:58 dasong.jds Exp $
  */
 public class FrogCheckException extends RuntimeException {
 
 	private static final long serialVersionUID = 4670114874512893276L;
 
 	/**
-	 * <code>ActsException</code> Constructor
+	 * <code>FrogException</code> Constructor
 	 */
 	public FrogCheckException() {
 		super();
 	}
 
 	/**
-	 * <code>ActsException</code> Constructor
+	 * <code>FrogException</code> Constructor
 	 *
 	 * @param message exception description
 	 */
@@ -43,7 +43,7 @@ public class FrogCheckException extends RuntimeException {
 	}
 
 	/**
-	 * <code>ActsException</code> Constructor
+	 * <code>FrogException</code> Constructor
 	 *
 	 * @param cause exception reason
 	 */
@@ -52,7 +52,7 @@ public class FrogCheckException extends RuntimeException {
 	}
 
 	/**
-	 * <code>ActsException</code> Constructor
+	 * <code>FrogException</code> Constructor
 	 *
 	 * @param message exception description
 	 * @param cause   exception reason

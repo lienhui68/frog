@@ -292,7 +292,7 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 
 
 	/**
-	 * Initialize the ACTS context
+	 * Initialize the Frog context
 	 *
 	 * @param caseId
 	 * @param prepareData
@@ -483,7 +483,7 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 	}
 
 	/**
-	 * Universal<code>beforeActsTest</code>，can be overridden in subclasses
+	 * Universal<code>beforeFrogTest</code>，can be overridden in subclasses
 	 *
 	 * @param frogRuntimeContext
 	 */
@@ -492,7 +492,7 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 	}
 
 	/**
-	 * Universal<code>afterActsTest</code>, can be overridden in subclasses
+	 * Universal<code>afterFrogTest</code>, can be overridden in subclasses
 	 *
 	 * @param frogRuntimeContext
 	 */

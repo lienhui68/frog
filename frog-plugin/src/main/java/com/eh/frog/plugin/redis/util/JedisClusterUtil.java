@@ -2,7 +2,7 @@
  * ymm56.com Inc.
  * Copyright (c) 2013-2021 All Rights Reserved.
  */
-package com.eh.frog.plugin.redis;
+package com.eh.frog.plugin.redis.util;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.HostAndPort;

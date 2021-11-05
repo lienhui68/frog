@@ -33,7 +33,7 @@ public class PrepareData {
 	private List<VirtualMockObject> virtualMockSet;
 	// config center
 	private List<VirtualConfigObject> virtualConfigSet;
-	// plugin parameters
-	private Map<String, Object> pluginParams;
+	// extend parameters
+	private Map<String, Object> extendParams;
 
 }

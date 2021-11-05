@@ -58,8 +58,7 @@ public class SomeTest {
 	@Test
 	public void test4() {
 		String url2 = this.getClass().getResource("/").toString();
-		System.out.println(System.getProperty("user.dir")
-		);
+		System.out.println(System.getProperty("user.dir"));
 	}
 
 }

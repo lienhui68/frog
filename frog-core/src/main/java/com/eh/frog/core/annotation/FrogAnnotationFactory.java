@@ -6,7 +6,6 @@ package com.eh.frog.core.annotation;
 
 import com.eh.frog.core.template.FrogTestBase;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -36,13 +35,46 @@ public class FrogAnnotationFactory {
 	 */
 	public void initAnnotationMethod(Set<Method> allMethod, FrogTestBase template) {
 		for (Method method : allMethod) {
-			addFrogMethod(method, AfterClean.class, template);
-			addFrogMethod(method, BeforeClean.class, template);
-			addFrogMethod(method, BeforeCheck.class, template);
-			addFrogMethod(method, AfterCheck.class, template);
-			addFrogMethod(method, BeforePrepare.class, template);
-			addFrogMethod(method, AfterPrepare.class, template);
-
+			if (method.isAnnotationPresent(BeforeClean.class)) {
+				BeforeClean hook = method.getAnnotation(BeforeClean.class);
+				addFrogMethod(method, BeforeClean.class, template, Lists.newArrayList(hook.includes()), Lists.newArrayList(hook.excludes()), hook.order());
+				continue;
+			}
+			if (method.isAnnotationPresent(AfterClean.class)) {
+				AfterClean hook = method.getAnnotation(AfterClean.class);
+				addFrogMethod(method, AfterClean.class, template, Lists.newArrayList(hook.includes()), Lists.newArrayList(hook.excludes()), hook.order());
+				continue;
+			}
+			if (method.isAnnotationPresent(BeforePrepare.class)) {
+				BeforePrepare hook = method.getAnnotation(BeforePrepare.class);
+				addFrogMethod(method, BeforePrepare.class, template, Lists.newArrayList(hook.includes()), Lists.newArrayList(hook.excludes()), hook.order());
+				continue;
+			}
+			if (method.isAnnotationPresent(AfterPrepare.class)) {
+				AfterPrepare hook = method.getAnnotation(AfterPrepare.class);
+				addFrogMethod(method, AfterPrepare.class, template, Lists.newArrayList(hook.includes()), Lists.newArrayList(hook.excludes()), hook.order());
+				continue;
+			}
+			if (method.isAnnotationPresent(BeforeExecute.class)) {
+				BeforeExecute hook = method.getAnnotation(BeforeExecute.class);
+				addFrogMethod(method, BeforeExecute.class, template, Lists.newArrayList(hook.includes()), Lists.newArrayList(hook.excludes()), hook.order());
+				continue;
+			}
+			if (method.isAnnotationPresent(AfterExecute.class)) {
+				AfterExecute hook = method.getAnnotation(AfterExecute.class);
+				addFrogMethod(method, AfterExecute.class, template, Lists.newArrayList(hook.includes()), Lists.newArrayList(hook.excludes()), hook.order());
+				continue;
+			}
+			if (method.isAnnotationPresent(BeforeCheck.class)) {
+				BeforeCheck hook = method.getAnnotation(BeforeCheck.class);
+				addFrogMethod(method, BeforeCheck.class, template, Lists.newArrayList(hook.includes()), Lists.newArrayList(hook.excludes()), hook.order());
+				continue;
+			}
+			if (method.isAnnotationPresent(AfterCheck.class)) {
+				AfterCheck hook = method.getAnnotation(AfterCheck.class);
+				addFrogMethod(method, AfterCheck.class, template, Lists.newArrayList(hook.includes()), Lists.newArrayList(hook.excludes()), hook.order());
+				continue;
+			}
 		}
 
 	}
@@ -53,32 +85,14 @@ public class FrogAnnotationFactory {
 	 * @param m
 	 * @param clsz
 	 */
-	private void addFrogMethod(Method m, Class<? extends Annotation> clsz, FrogTestBase template) {
+	private void addFrogMethod(Method m, Class<? extends Annotation> clsz, FrogTestBase template, List<String> includes, List<String> excludes, int order) {
 
 		if (!annotationMethods.containsKey(clsz.getSimpleName())) {
 			annotationMethods.put(clsz.getSimpleName(), Lists.newLinkedList());
 		}
 
-		addFrogMethod(annotationMethods.get(clsz.getSimpleName()), m, clsz, template);
+		IFrogMethod iFrogMethod = new FrogMethodImpl(m, template, includes, excludes, order);
+		annotationMethods.get(clsz.getSimpleName()).add(iFrogMethod);
 	}
 
-	/**
-	 * Add annotation method
-	 *
-	 * @param m
-	 * @param template
-	 */
-	private void addFrogMethod(List<IFrogMethod> methodList, Method m,
-	                           Class<? extends Annotation> clsz, FrogTestBase template) {
-		if (m.isAnnotationPresent(clsz)) {
-			IFrogMethod iFrogMethod = new FrogMethodImpl(m, template);
-			int i = 0;
-			for (; i < methodList.size(); i++) {
-				if (methodList.get(i).getOrder() > iFrogMethod.getOrder()) {
-					break;
-				}
-			}
-			methodList.add(i, iFrogMethod);
-		}
-	}
 }

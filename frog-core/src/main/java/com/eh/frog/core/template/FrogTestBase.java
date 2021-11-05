@@ -27,6 +27,7 @@ import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.platform.commons.util.AnnotationUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -38,6 +39,7 @@ import javax.sql.DataSource;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author f90fd4n david
@@ -97,7 +99,7 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 			}
 			//annotation init
 			annotationFactory = new FrogAnnotationFactory(annotationMethods);
-			Set<Method> allMethod = ClassHelper.getDeclaredAvailableMethods(this.getClass());
+			Set<Method> allMethod = ClassHelper.getAvailableMethods(this.getClass()).stream().filter(m -> AnnotationUtils.findAnnotation(m, FrogHook.class).isPresent()).collect(Collectors.toSet());
 			annotationFactory.initAnnotationMethod(allMethod, this);
 			//Load the initial persistence plugins
 			loadInitialPersistencePlugin();
@@ -202,17 +204,21 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 	public void process(FrogRuntimeContext frogRuntimeContext) {
 		// clear
 		clear(frogRuntimeContext);
-		// prepare
-		prepare(frogRuntimeContext);
-		// execute
-		execute(frogRuntimeContext);
-		// check
-		check(frogRuntimeContext);
-		// 后置清理
-		String postProcessCleanStr = GlobalConfigurationHolder.getGlobalConfiguration().get(FrogConfigConstants.POST_PROCESS_CLEAN);
-		boolean postProcessClean = Boolean.parseBoolean(postProcessCleanStr);
-		if (postProcessClean) {
-			clear(frogRuntimeContext);
+
+		try {
+			// prepare
+			prepare(frogRuntimeContext);
+			// execute
+			execute(frogRuntimeContext);
+			// check
+			check(frogRuntimeContext);
+		} finally {
+			// 后置清理
+			String postProcessCleanStr = GlobalConfigurationHolder.getGlobalConfiguration().get(FrogConfigConstants.POST_PROCESS_CLEAN);
+			boolean postProcessClean = Boolean.parseBoolean(postProcessCleanStr);
+			if (postProcessClean) {
+				clear(frogRuntimeContext);
+			}
 		}
 	}
 
@@ -386,6 +392,7 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 	private void initPersistencePlugin() {
 		persistencePlugins.forEach(p -> {
 			try {
+				Assertions.assertTrue(!StringUtils.isEmpty(p.getPluginSymbol()), StringUtil.buildMessage("插件标识不能为空,class:{}", p.getClass().getSimpleName()));
 				final Map<String, Object>[] pluginConfig = new Map[]{Maps.newHashMap()};
 				Optional<Map<String, Map<String, Object>>> extensionConfigOpt = GlobalConfigurationHolder.getExtensionConfig();
 				extensionConfigOpt.ifPresent(extensionConfig -> {
@@ -405,9 +412,9 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 	private void doPersistencePluginPrepare() {
 		persistencePlugins.forEach(p -> {
 			try {
-				Map<String, Object> pluginParams = frogRuntimeContext.getPrepareData().getPluginParams();
-				if (Objects.nonNull(pluginParams)) {
-					p.prepare(Optional.of(pluginParams.get(p.getPluginSymbol())));
+				Map<String, Object> extendParams = frogRuntimeContext.getPrepareData().getExtendParams();
+				if (Objects.nonNull(extendParams)) {
+					p.prepare(Optional.of(extendParams.get(p.getPluginSymbol())));
 				} else {
 					p.prepare(Optional.empty());
 				}
@@ -421,12 +428,14 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 	private void doPersistencePluginCheck() {
 		persistencePlugins.forEach(p -> {
 			try {
-				Map<String, Object> pluginParams = frogRuntimeContext.getPrepareData().getPluginParams();
-				if (Objects.nonNull(pluginParams)) {
-					p.check(Optional.of(pluginParams.get(p.getPluginSymbol())));
+				Map<String, Object> extendParams = frogRuntimeContext.getPrepareData().getExtendParams();
+				if (Objects.nonNull(extendParams)) {
+					p.check(Optional.of(extendParams.get(p.getPluginSymbol())));
 				} else {
 					p.check(Optional.empty());
 				}
+			} catch (AssertionError e) {
+				throw new FrogCheckException("插件:{}执行check失败,失败信息:{}", p.getClass().getSimpleName(), e.getMessage());
 			} catch (Throwable t) {
 				String err = StringUtil.buildMessage("插件:{}执行check出错", p.getClass().getSimpleName());
 				throw new FrogTestException(err, t);
@@ -437,9 +446,9 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 	private void doPersistencePluginClean() {
 		persistencePlugins.forEach(p -> {
 			try {
-				Map<String, Object> pluginParams = frogRuntimeContext.getPrepareData().getPluginParams();
-				if (Objects.nonNull(pluginParams)) {
-					p.clean(Optional.of(pluginParams.get(p.getPluginSymbol())));
+				Map<String, Object> extendParams = frogRuntimeContext.getPrepareData().getExtendParams();
+				if (Objects.nonNull(extendParams)) {
+					p.clean(Optional.of(extendParams.get(p.getPluginSymbol())));
 				} else {
 					p.clean(Optional.empty());
 				}
@@ -496,8 +505,20 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 			return;
 		}
 
+		list.sort(Comparator.comparing(IFrogMethod::getOrder));
+
 		for (IFrogMethod method : list) {
-			method.invoke(frogRuntimeContext);
+			List<String> includes = method.getIncludeCaseIds();
+			List<String> excludes = method.getExcludeCaseIds();
+			if (CollectionUtils.isEmpty(includes) && CollectionUtils.isEmpty(excludes)) {
+				method.invoke(frogRuntimeContext);
+			} else {
+				String[] ss = frogRuntimeContext.getCaseId().split("_");
+				boolean anyMatch = includes.stream().filter(c -> !excludes.contains(c)).anyMatch(c -> c.equals(ss[ss.length - 1]));
+				if (anyMatch) {
+					method.invoke(frogRuntimeContext);
+				}
+			}
 		}
 	}
 

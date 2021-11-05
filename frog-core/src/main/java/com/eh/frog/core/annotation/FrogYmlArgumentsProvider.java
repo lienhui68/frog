@@ -92,18 +92,12 @@ public class FrogYmlArgumentsProvider implements ArgumentsProvider, AnnotationCo
 		if (CollectionUtils.isEmpty(yamlFiles)) {
 			String testFacadeSimpleName = testClass.getSimpleName().replace("Test", "");
 			// 加载测试数据
-			String testFileName = testFacadeSimpleName + "_" + testedMethodName;
-			datas = FrogFileUtil.loadPrepareDataFromYaml(dataFolder, testFileName);
+			String testFileName = testFacadeSimpleName + "_" + testedMethodName + ".yaml";
+			datas = FrogFileUtil.loadPrepareDataFromYaml(dataFolder, testFileName, getClass().getClassLoader());
 		} else {
 			// 从指定yaml文件中提取用例
 			for (String f : yamlFiles) {
-				String filename = f;
-				if (f.endsWith(".yaml")) {
-					filename = f.replace(".yaml", "");
-				} else if (f.endsWith(".yml")) {
-					filename = f.replace(".yml", "");
-				}
-				datas.putAll(FrogFileUtil.loadPrepareDataFromYaml(dataFolder, filename));
+				datas.putAll(FrogFileUtil.loadPrepareDataFromYaml(dataFolder, f, getClass().getClassLoader()));
 			}
 		}
 		return datas;

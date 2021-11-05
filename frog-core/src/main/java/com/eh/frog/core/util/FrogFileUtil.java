@@ -15,10 +15,16 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
 import java.io.*;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author f90fd4n david
@@ -45,12 +51,31 @@ public class FrogFileUtil {
 		return file;
 	}
 
-	public static LinkedHashMap<String, PrepareData> loadPrepareDataFromYaml(String folder, String fileName) {
-		File yamlFile = null;
+	/**
+	 * @param fileRelativePath classpath相对路径
+	 * @param filename         文件名，不含后缀
+	 * @return
+	 */
+	public static File walkTestResourceFile(String fileRelativePath, String filename, ClassLoader classLoader) throws URISyntaxException, IOException {
+		Path configFilePath = Paths.get(classLoader.getResource(fileRelativePath).toURI());
+
+		List<Path> searchResult = Files.walk(configFilePath)
+				.filter(s -> s.endsWith(filename))
+				.collect(toList());
+		if (searchResult.size() < 1) {
+			throw new FrogTestException("{}路径下不存在文件:{}", fileRelativePath, filename);
+		}
+		if (searchResult.size() > 1) {
+			log.warn("{}路径下文件名:{}存在多个", fileRelativePath, filename);
+		}
+		return searchResult.get(0).toFile();
+	}
+
+	public static LinkedHashMap<String, PrepareData> loadPrepareDataFromYaml(String folder, String fileName, ClassLoader classLoader) {
+		File yamlFile;
 		InputStream is;
 		try {
-			String fileFullPath = folder + "/" + fileName + ".yaml";
-			yamlFile = getTestResourceFile(fileFullPath);
+			yamlFile = walkTestResourceFile(folder, fileName, classLoader);
 			is = new FileInputStream(yamlFile);
 			InputStreamReader reader = new InputStreamReader(is);
 			Yaml yaml = new Yaml(new DateYamlConstructor());
@@ -59,14 +84,11 @@ public class FrogFileUtil {
 			LinkedHashMap<String, PrepareData> rawData = (LinkedHashMap<String, PrepareData>) iterator.next();
 			return rawData;
 		} catch (FileNotFoundException e) {
-			log.error("Can't find file:" + yamlFile.getAbsolutePath(), e);
-			return null;
+			throw new FrogTestException("Can't find file, folder:{}, filename:{}", folder, fileName, e);
 		} catch (IOException e) {
-			log.error("IO error:" + yamlFile.getAbsolutePath(), e);
-			return null;
+			throw new FrogTestException("IO error, folder:{}, filename:{}", folder, fileName, e);
 		} catch (Exception e) {
-			log.error("Wrong file format:" + yamlFile.getAbsolutePath(), e);
-			return null;
+			throw new FrogTestException("Wrong file format, folder:{}, filename:{}", folder, fileName, e);
 		}
 	}
 
@@ -179,6 +201,10 @@ public class FrogFileUtil {
 			log.warn("Wrong file format:" + relativeDir);
 			return null;
 		}
+	}
+
+	public static void main(String[] args) {
+
 	}
 
 }

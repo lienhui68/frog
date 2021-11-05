@@ -5,12 +5,13 @@
 package com.eh.frog.core.annotation;
 
 import com.eh.frog.core.context.FrogRuntimeContext;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * @author f90fd4n david
@@ -18,15 +19,16 @@ import java.lang.reflect.Method;
  */
 @Slf4j
 @NoArgsConstructor
+@AllArgsConstructor
 public class FrogMethodImpl implements IFrogMethod {
 
 	private Method invoker;
 
 	protected Object instance;
 
-	@Getter
-	/* the invoke order */
-	private int order = 0;
+	private List<String> includeCaseIds;
+	private List<String> excludeCaseIds;
+	private int order;
 
 	@Override
 	public void invoke(FrogRuntimeContext frogRuntimeContext) {
@@ -58,6 +60,16 @@ public class FrogMethodImpl implements IFrogMethod {
 		}
 	}
 
+	@Override
+	public List<String> getIncludeCaseIds() {
+		return this.includeCaseIds;
+	}
+
+	@Override
+	public List<String> getExcludeCaseIds() {
+		return this.excludeCaseIds;
+	}
+
 	/**
 	 * Constructor.
 	 *
@@ -71,6 +83,6 @@ public class FrogMethodImpl implements IFrogMethod {
 
 	@Override
 	public int getOrder() {
-		return 0;
+		return this.order;
 	}
 }

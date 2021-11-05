@@ -27,6 +27,11 @@ import java.lang.annotation.Target;
  */
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 @Target(java.lang.annotation.ElementType.METHOD)
+@FrogHook
 public @interface BeforeCheck {
+	String[] includes() default {};
 
+	String[] excludes() default {};
+
+	int order() default 0;
 }

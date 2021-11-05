@@ -16,17 +16,26 @@
  */
 package com.eh.frog.core.annotation;
 
+import org.springframework.core.annotation.AliasFor;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
  * after check dosomething
- * 
+ *
  * @author tianzhu.wtzh
  * @version $Id: AfterCheck.java, v 0.1 2016年5月12日 上午11:18:08 tianzhu.wtzh Exp $
  */
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 @Target(java.lang.annotation.ElementType.METHOD)
+@FrogHook
 public @interface AfterCheck {
+	@AliasFor(annotation = FrogHook.class, attribute = "includeFilters")
+	String[] includes() default {};
 
+	@AliasFor(annotation = FrogHook.class, attribute = "excludeFilters")
+	String[] excludes() default {};
+
+	int order() default 0;
 }

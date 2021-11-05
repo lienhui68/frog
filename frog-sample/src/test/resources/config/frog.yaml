@@ -4,7 +4,7 @@ baseConfig:
   prepareRunBackFill: false
   testDataFolder: data
 #  testOnly: ^T
-  postProcessClean: true
+  postProcessClean: false
 tableQueryConfig:
   commonTableQueryConfig: [ user_id ]
   specialTableQueryConfig:

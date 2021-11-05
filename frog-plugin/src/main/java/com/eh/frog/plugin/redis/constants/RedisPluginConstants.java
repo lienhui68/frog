@@ -2,7 +2,7 @@
  * ymm56.com Inc.
  * Copyright (c) 2013-2021 All Rights Reserved.
  */
-package com.eh.frog.plugin.redis;
+package com.eh.frog.plugin.redis.constants;
 
 /**
  * @author f90fd4n david

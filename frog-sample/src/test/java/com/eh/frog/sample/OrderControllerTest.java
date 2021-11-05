@@ -22,9 +22,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
  * @author f90fd4n david
  * @version 1.0.0: dao.java, v 0.1 2021-09-14 9:11 下午 david Exp $$
  */
-@EnablePlugin({
-		@PluginSignature(type = PersistencePlugin.class, plugins = {ClusterRedisPersistencePluginImpl.class})
-})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {FrogSampleApplication.class, FrogComponentConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class OrderControllerTest extends SampleTestBase {

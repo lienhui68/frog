@@ -401,7 +401,9 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 						pluginConfig[0] = pluginConfigFromYaml;
 					}
 				});
+				log.info("=====>plugin:{} call init...", p.getPluginSymbol());
 				p.init(pluginConfig[0]);
+				log.info("=====>plugin:{} call init end...", p.getPluginSymbol());
 			} catch (Throwable t) {
 				String err = StringUtil.buildMessage("插件:{}执行init出错", p.getClass().getSimpleName());
 				throw new FrogTestException(err, t);
@@ -413,11 +415,13 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 		persistencePlugins.forEach(p -> {
 			try {
 				Map<String, Object> extendParams = frogRuntimeContext.getPrepareData().getExtendParams();
+				log.info("=====>plugin:{} call prepare...", p.getPluginSymbol());
 				if (Objects.nonNull(extendParams)) {
 					p.prepare(Optional.of(extendParams.get(p.getPluginSymbol())));
 				} else {
 					p.prepare(Optional.empty());
 				}
+				log.info("=====>plugin:{} call prepare end...", p.getPluginSymbol());
 			} catch (Throwable t) {
 				String err = StringUtil.buildMessage("插件:{}执行prepare出错", p.getClass().getSimpleName());
 				throw new FrogTestException(err, t);
@@ -429,11 +433,13 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 		persistencePlugins.forEach(p -> {
 			try {
 				Map<String, Object> extendParams = frogRuntimeContext.getPrepareData().getExtendParams();
+				log.info("=====>plugin:{} call check...", p.getPluginSymbol());
 				if (Objects.nonNull(extendParams)) {
 					p.check(Optional.of(extendParams.get(p.getPluginSymbol())));
 				} else {
 					p.check(Optional.empty());
 				}
+				log.info("=====>plugin:{} call check end...", p.getPluginSymbol());
 			} catch (AssertionError e) {
 				throw new FrogCheckException("插件:{}执行check失败,失败信息:{}", p.getClass().getSimpleName(), e.getMessage());
 			} catch (Throwable t) {
@@ -447,11 +453,13 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 		persistencePlugins.forEach(p -> {
 			try {
 				Map<String, Object> extendParams = frogRuntimeContext.getPrepareData().getExtendParams();
+				log.info("=====>plugin:{} call clean...", p.getPluginSymbol());
 				if (Objects.nonNull(extendParams)) {
 					p.clean(Optional.of(extendParams.get(p.getPluginSymbol())));
 				} else {
 					p.clean(Optional.empty());
 				}
+				log.info("=====>plugin:{} call clean end...", p.getPluginSymbol());
 			} catch (Throwable t) {
 				String err = StringUtil.buildMessage("插件:{}执行clean出错", p.getClass().getSimpleName());
 				throw new FrogTestException(err, t);

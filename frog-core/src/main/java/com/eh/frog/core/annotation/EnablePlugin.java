@@ -11,6 +11,7 @@ import java.lang.annotation.*;
  * @version 1.0.0: EnablePlugin.java, v 0.1 2021-11-03 5:35 下午 david Exp $$
  */
 @Documented
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface EnablePlugin {

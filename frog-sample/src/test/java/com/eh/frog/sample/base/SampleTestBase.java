@@ -17,7 +17,7 @@ import com.eh.frog.plugin.redis.ClusterRedisPersistencePluginImpl;
  * @version 1.0.0: SampleTestBase.java, v 0.1 2021-11-04 2:40 下午 david Exp $$
  */
 @EnablePlugin({
-		@PluginSignature(type = PersistencePlugin.class, plugins = {ClusterRedisPersistencePluginImpl.class})
+//		@PluginSignature(type = PersistencePlugin.class, plugins = {ClusterRedisPersistencePluginImpl.class})
 })
 public class SampleTestBase extends FrogTestBase {
 

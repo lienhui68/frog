@@ -5,7 +5,6 @@
 package com.eh.frog.core.component.db;
 
 import com.eh.frog.core.config.GlobalConfigurationHolder;
-import com.eh.frog.core.constants.FrogConfigConstants;
 import com.eh.frog.core.exception.FrogCheckException;
 import com.eh.frog.core.exception.FrogTestException;
 import com.eh.frog.core.model.VirtualTable;
@@ -14,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.assertj.core.util.Lists;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.util.CollectionUtils;
 
 import javax.sql.DataSource;
 import java.text.ParseException;
@@ -380,6 +378,11 @@ public class DBDataProcessor {
 				}
 			}
 		});
+	}
+
+	public List<Map<String, Object>> queryForList(String sql) {
+		List<Map<String, Object>> result = jdbcTemplate.queryForList(sql);
+		return result;
 	}
 
 	private static Date toDate(String dateStr) {

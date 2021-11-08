@@ -6,6 +6,7 @@ package com.eh.frog.core.component.config;
 
 import com.eh.frog.core.annotation.FrogConditionalOnProperty;
 import com.eh.frog.core.component.event.MessageEventAdvice;
+import com.eh.frog.core.component.prepare.MybatisPlugin4Prepare;
 import com.eh.frog.core.constants.FrogConfigConstants;
 import com.eh.frog.core.util.FrogFileUtil;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
@@ -17,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
  * @version 1.0.0: FrogComponentConfiguration.java, v 0.1 2021-10-11 3:01 下午 david Exp $$
  */
 @Configuration
-public class FrogComponentConfiguration {
+public class FrogComponentAutoConfiguration {
 
 	@FrogConditionalOnProperty(FrogConfigConstants.MESSAGE_EVENT_POI)
 	@Bean
@@ -27,5 +28,12 @@ public class FrogComponentConfiguration {
 		advisor.setExpression(pointcut);
 		advisor.setAdvice(new MessageEventAdvice());
 		return advisor;
+	}
+
+	@FrogConditionalOnProperty(value = FrogConfigConstants.PREPARE_RUN_BACK_FILL, havingValue = "true")
+	@Bean
+	public MybatisPlugin4Prepare mybatisPlugin4Prepare() {
+		MybatisPlugin4Prepare mybatisPlugin4Prepare = new MybatisPlugin4Prepare();
+		return mybatisPlugin4Prepare;
 	}
 }

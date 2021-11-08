@@ -1,0 +1,22 @@
+
+
+========================================================================
+
+!!yaml
+args: null
+depDataSet: null
+desc: 支付订单，check订单状态发生变化，测预跑反填功能
+expectDataSet:
+- flags: {}
+  tableBaseDesc: null
+  tableData:
+  - {id: 2283584, gmt_create: '2021-11-08 13:40:04', gmt_modified: '2021-10-08 14:37:10',
+    order_id: 9173444395055435776, order_amount: 225.25, order_time: '2021-10-08 14:37:10',
+    order_status: 30, buyer_id: 1025229, is_valid: 1}
+  tableName: tbl_order
+expectEventSet: null
+expectException: null
+expectResult: null
+extendParams: null
+virtualConfigSet: null
+virtualMockSet: null

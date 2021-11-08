@@ -5,13 +5,15 @@
 package com.eh.frog.core.context;
 
 import com.eh.frog.core.component.db.DBDataProcessor;
+import com.eh.frog.core.config.GlobalConfigurationHolder;
+import com.eh.frog.core.constants.FrogConfigConstants;
 import com.eh.frog.core.model.PrepareData;
-import com.eh.frog.core.model.VirtualObject;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author f90fd4n david
@@ -68,6 +70,21 @@ public class FrogRuntimeContext {
 		this.testedMethod = testedMethod;
 		this.testedObj = testedObj;
 		this.applicationContext = applicationContext;
+	}
+
+	public boolean isEnablePrepareFill() {
+		Map<String, String> globalConfiguration = GlobalConfigurationHolder.getGlobalConfiguration();
+		String str = globalConfiguration.get(FrogConfigConstants.PREPARE_RUN_BACK_FILL);
+		if (Objects.nonNull(str)) {
+			boolean b;
+			try {
+				b = Boolean.parseBoolean(str);
+			} catch (Exception e) {
+				return false;
+			}
+			return b;
+		}
+		return false;
 	}
 
 }

@@ -9,11 +9,13 @@ import com.eh.frog.core.component.db.DBDataProcessor;
 import com.eh.frog.core.component.event.EventContextHolder;
 import com.eh.frog.core.component.handler.TestUnitHandler;
 import com.eh.frog.core.component.mock.MockContextHolder;
+import com.eh.frog.core.component.prepare.PrepareFillDataHolder;
 import com.eh.frog.core.config.FrogConfig;
 import com.eh.frog.core.config.GlobalConfigurationHolder;
 import com.eh.frog.core.constants.FrogConfigConstants;
 import com.eh.frog.core.context.FrogRuntimeContext;
 import com.eh.frog.core.context.FrogRuntimeContextHolder;
+import com.eh.frog.core.enums.YamlSerializeMode;
 import com.eh.frog.core.exception.FrogCheckException;
 import com.eh.frog.core.exception.FrogTestException;
 import com.eh.frog.core.model.PrepareData;
@@ -34,6 +36,9 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
 
 import javax.sql.DataSource;
 import java.lang.annotation.Annotation;
@@ -47,7 +52,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public abstract class FrogTestBase implements ApplicationContextAware {
+public class FrogTestBase implements ApplicationContextAware {
 
 	/**
 	 * case上下文
@@ -210,8 +215,14 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 			prepare(frogRuntimeContext);
 			// execute
 			execute(frogRuntimeContext);
-			// check
-			check(frogRuntimeContext);
+			if (frogRuntimeContext.isEnablePrepareFill()) {
+				// prepare fill
+				prepareFill();
+				PrepareFillDataHolder.clear();
+			} else {
+				// check
+				check(frogRuntimeContext);
+			}
 		} finally {
 			// 后置清理
 			String postProcessCleanStr = GlobalConfigurationHolder.getGlobalConfiguration().get(FrogConfigConstants.POST_PROCESS_CLEAN);
@@ -220,6 +231,19 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 				clear(frogRuntimeContext);
 			}
 		}
+	}
+
+	private void prepareFill() {
+		PrepareData prepareData = PrepareFillDataHolder.getPrepareData();
+		// 获取反填临时文件路径
+		String path = GlobalConfigurationHolder.getGlobalConfiguration().get(FrogConfigConstants.PREPARE_FILL_TMP_FILE);
+		if (StringUtils.isEmpty(path)) {
+			path = FrogConfigConstants.DEFAULT_PREPARE_FILL_TMP_FILE;
+		}
+		// 创建文件
+		Yaml yaml = new Yaml();
+		String content = yaml.dumpAs(prepareData, Tag.YAML, DumperOptions.FlowStyle.AUTO);
+		FrogFileUtil.writeFile(path, content, YamlSerializeMode.APPEND);
 	}
 
 	/**
@@ -321,18 +345,22 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 		// 测试方法
 		OverloadHandler overloadHandlerAnnotation = testMethod.getAnnotation(OverloadHandler.class);
 		Method method;
+		String methodName;
 		if (Objects.isNull(overloadHandlerAnnotation) || StringUtils.isEmpty(overloadHandlerAnnotation.target())) {
-			String methodName = testMethod.getName();
+			methodName = testMethod.getName();
 			method = findMethod(methodName, testObj);
 		} else {
 			Class clazz = testObj.getClass();
-			String methodName = overloadHandlerAnnotation.target();
+			methodName = overloadHandlerAnnotation.target();
 			String[] params = overloadHandlerAnnotation.params().split(",");
 			Class[] paramClasses = new Class[params.length];
 			for (int i = 0; i < params.length; i++) {
 				paramClasses[i] = Class.forName(params[i]);
 			}
 			method = clazz.getMethod(methodName, paramClasses);
+		}
+		if (Objects.isNull(method)) {
+			throw new FrogTestException("method not exits by name:{},class:{}", methodName, testObj.getClass().getSimpleName());
 		}
 		method.setAccessible(true);
 		return method;
@@ -381,7 +409,7 @@ public abstract class FrogTestBase implements ApplicationContextAware {
 					try {
 						persistencePlugins.add((PersistencePlugin) p.newInstance());
 					} catch (Exception e) {
-						String err = StringUtil.buildMessage("插件:{}执行init出错", p.getClass().getSimpleName());
+						String err = StringUtil.buildMessage("加载插件:{}出错", p.getClass().getSimpleName());
 						throw new FrogTestException(err, e);
 					}
 				});

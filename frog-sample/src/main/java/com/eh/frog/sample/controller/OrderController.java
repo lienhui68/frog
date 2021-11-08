@@ -64,6 +64,15 @@ public class OrderController {
 		return Response.success(true);
 	}
 
+	@PostMapping("/order/pay")
+	public Response<Boolean> pay(@Param("id") Long orderId) {
+		Order request = new Order();
+		request.setOrderId(orderId);
+		request.setOrderStatus(30);
+		orderMapper.updateByOrderId(request);
+		return Response.success(true);
+	}
+
 	private Long generateDistributedId() {
 		return RandomUtils.nextLong();
 	}

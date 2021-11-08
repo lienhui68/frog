@@ -4,7 +4,7 @@
  */
 package com.eh.frog.sample;
 
-import com.eh.frog.core.component.config.FrogComponentConfiguration;
+import com.eh.frog.core.component.config.FrogComponentAutoConfiguration;
 import com.eh.frog.sample.base.Response;
 import com.eh.frog.sample.controller.UserController;
 import com.eh.frog.sample.orm.bean.User;
@@ -15,21 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
-
 /**
  * @author f90fd4n david
  * @version 1.0.0: dao.java, v 0.1 2021-09-14 9:11 下午 david Exp $$
  */
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = {FrogSampleApplication.class, FrogComponentConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = {FrogSampleApplication.class, FrogComponentAutoConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserControllerTest  {
 	@Autowired
 	private UserMapper userMapper;

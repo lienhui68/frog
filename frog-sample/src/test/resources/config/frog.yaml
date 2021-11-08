@@ -1,7 +1,7 @@
 baseConfig:
   messageEventPoi: execution(public * com.eh.frog.sample.mq.producer.*Sender.send*(..))
   datasourceBeanName: dataSource
-  prepareRunBackFill: false
+  prepareRunBackFill: true
   testDataFolder: data
 #  testOnly: ^T
   postProcessClean: false

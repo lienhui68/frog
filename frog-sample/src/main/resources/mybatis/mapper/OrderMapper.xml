@@ -125,14 +125,43 @@
   </update>
   <update id="updateByPrimaryKey" parameterType="com.eh.frog.sample.orm.bean.Order">
     update tbl_order
-    set gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
-      gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
-      order_id = #{orderId,jdbcType=BIGINT},
-      order_amount = #{orderAmount,jdbcType=DECIMAL},
-      order_time = #{orderTime,jdbcType=TIMESTAMP},
-      order_status = #{orderStatus,jdbcType=INTEGER},
-      buyer_id = #{buyerId,jdbcType=BIGINT},
-      is_valid = #{isValid,jdbcType=INTEGER}
+    set gmt_create   = #{gmtCreate,jdbcType=TIMESTAMP},
+        gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
+        order_id     = #{orderId,jdbcType=BIGINT},
+        order_amount = #{orderAmount,jdbcType=DECIMAL},
+        order_time   = #{orderTime,jdbcType=TIMESTAMP},
+        order_status = #{orderStatus,jdbcType=INTEGER},
+        buyer_id     = #{buyerId,jdbcType=BIGINT},
+        is_valid     = #{isValid,jdbcType=INTEGER}
     where id = #{id,jdbcType=BIGINT}
   </update>
+
+  <update id="updateByOrderId" parameterType="com.eh.frog.sample.orm.bean.Order">
+    update tbl_order
+    <set>
+      <if test="gmtCreate != null">
+        gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="gmtModified != null">
+        gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
+      </if>
+      <if test="orderAmount != null">
+        order_amount = #{orderAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="orderTime != null">
+        order_time = #{orderTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="orderStatus != null">
+        order_status = #{orderStatus,jdbcType=INTEGER},
+      </if>
+      <if test="buyerId != null">
+        buyer_id = #{buyerId,jdbcType=BIGINT},
+      </if>
+      <if test="isValid != null">
+        is_valid = #{isValid,jdbcType=INTEGER},
+      </if>
+    </set>
+    where order_id = #{orderId,jdbcType=BIGINT}
+  </update>
+
 </mapper>

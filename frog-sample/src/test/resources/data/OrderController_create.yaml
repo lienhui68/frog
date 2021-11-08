@@ -5,20 +5,17 @@ OrderController_create_001: !!com.eh.frog.core.model.PrepareData
       object: !!com.eh.frog.sample.orm.bean.Order { buyerId: 1025229, gmtCreate: null, gmtModified: null, id: null, isValid: null,
                         orderAmount: 225.25, orderId: null, orderStatus: null, orderTime: '2021-10-08 14:37:10' }
   depDataSet:
-    - dataObjClazz: com.eh.frog.sample.orm.bean.User
-      tableName: tbl_user
+    - tableName: tbl_user
       tableBaseDesc: 用户表
       tableData:
         - { user_id: 1025229, user_name: 武松, gmt_modified: '2021-09-08 18:00:00' }
   expectDataSet:
-    - dataObjClazz: null
-      tableName: tbl_user
+    - tableName: tbl_user
       tableBaseDesc: 用户表
       flags: { }
       tableData:
         - { user_name: 武松, user_id: 1025229 }
-    - dataObjClazz: null
-      tableName: tbl_order
+    - tableName: tbl_order
       tableBaseDesc: 订单表
       flags: { gmt_create: D200 }
       tableData:
@@ -52,20 +49,17 @@ OrderController_create_002: !!com.eh.frog.core.model.PrepareData
                     id: null, isValid: null, orderAmount: 225.25, orderId: null,
                     orderStatus: null, orderTime: '2021-10-08 14:37:10' }
   depDataSet:
-    - dataObjClazz: com.eh.frog.sample.orm.bean.User
-      tableName: tbl_user
+    - tableName: tbl_user
       tableBaseDesc: 用户表
       tableData:
         - { user_id: 1025229, user_name: 武松, gmt_modified: '2021-09-08 18:00:00' }
   expectDataSet:
-    - dataObjClazz: null
-      tableName: tbl_user
+    - tableName: tbl_user
       tableBaseDesc: 用户表
       flags: { }
       tableData:
         - { user_name: 武松, user_id: 1025229 }
-    - dataObjClazz: null
-      tableName: tbl_order
+    - tableName: tbl_order
       tableBaseDesc: 订单表
       flags: { gmt_create: D200 }
       tableData:
@@ -98,20 +92,17 @@ OrderController_create_003: !!com.eh.frog.core.model.PrepareData
                                                     id: null, isValid: null, orderAmount: 225.25, orderId: null,
                                                     orderStatus: null, orderTime: '2021-10-08 14:37:10' }
   depDataSet:
-    - dataObjClazz: com.eh.frog.sample.orm.bean.User
-      tableName: tbl_user
+    - tableName: tbl_user
       tableBaseDesc: 用户表
       tableData:
         - { user_id: 1025229, user_name: 武松, gmt_modified: '2021-09-08 18:00:00' }
   expectDataSet:
-    - dataObjClazz: null
-      tableName: tbl_user
+    - tableName: tbl_user
       tableBaseDesc: 用户表
       flags: { }
       tableData:
         - { user_name: 武松, user_id: 1025229 }
-    - dataObjClazz: null
-      tableName: tbl_order
+    - tableName: tbl_order
       tableBaseDesc: 订单表
       flags: { gmt_create: D200 }
       tableData:

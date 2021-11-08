@@ -28,9 +28,13 @@ public final class FrogConfigConstants {
 	 */
 	public static final String TEST_DATA_FOLDER = "testDataFolder";
 	/**
-	 * 是否开启预跑反填
+	 * 是否开启预跑反填，支持db/msg/rpc call反填，db目前插入不支持批量插入，等遇到批量插入场景再考虑
 	 */
 	public static final String PREPARE_RUN_BACK_FILL = "prepareRunBackFill";
+	/**
+	 * 预跑反填临时文件路径,默认data/prepare.yaml
+	 */
+	public static final String PREPARE_FILL_TMP_FILE = "prepareFillTmpFile";
 	/**
 	 * 筛选用例执行
 	 */
@@ -50,6 +54,10 @@ public final class FrogConfigConstants {
 	 * 表查询字段 虚拟设置,用来映射通用表查询字段
 	 */
 	public static final String FROG_VIRTUAL_COMMON_TABLE = "frog_virtual_common";
+	/**
+	 * 预跑反填临时文件默认路径
+	 */
+	public static final String DEFAULT_PREPARE_FILL_TMP_FILE = "data/frogPrepareFillData.yaml";
 
 	//==================环境配置===============//
 	/**

@@ -16,9 +16,6 @@ import java.util.Map;
  */
 @Data
 public class VirtualTable {
-	// if DO, the class name of the DO
-	private String dataObjClazz;
-
 	// table name
 	private String tableName;
 

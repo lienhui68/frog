@@ -84,11 +84,14 @@ public class FrogFileUtil {
 			LinkedHashMap<String, PrepareData> rawData = (LinkedHashMap<String, PrepareData>) iterator.next();
 			return rawData;
 		} catch (FileNotFoundException e) {
-			throw new FrogTestException("Can't find file, folder:{}, filename:{}", folder, fileName, e);
+			String err = StringUtil.buildMessage("Can't find file, folder:{}, filename:{}", folder, fileName);
+			throw new FrogTestException(err, e);
 		} catch (IOException e) {
-			throw new FrogTestException("IO error, folder:{}, filename:{}", folder, fileName, e);
+			String err = StringUtil.buildMessage("IO error, folder:{}, filename:{}", folder, fileName);
+			throw new FrogTestException(err, e);
 		} catch (Exception e) {
-			throw new FrogTestException("Wrong file format, folder:{}, filename:{}", folder, fileName, e);
+			String err = StringUtil.buildMessage("Wrong file format, folder:{}, filename:{}", folder, fileName);
+			throw new FrogTestException(err, e);
 		}
 	}
 
@@ -104,14 +107,14 @@ public class FrogFileUtil {
 			FrogConfig frogConfig = yaml.load(reader);
 			return frogConfig;
 		} catch (FileNotFoundException e) {
-			log.error("Can't find file:" + yamlFile.getAbsolutePath(), e);
-			return null;
+			String err = StringUtil.buildMessage("Can't find file, filename:{}", CONFIG_FILE_PATH);
+			throw new FrogTestException(err, e);
 		} catch (IOException e) {
-			log.error("IO error:" + yamlFile.getAbsolutePath(), e);
-			return null;
+			String err = StringUtil.buildMessage("IO error, filename:{}", CONFIG_FILE_PATH);
+			throw new FrogTestException(err, e);
 		} catch (Exception e) {
-			log.error("Wrong file format:" + yamlFile.getAbsolutePath(), e);
-			return null;
+			String err = StringUtil.buildMessage("Wrong file format, filename:{}", CONFIG_FILE_PATH);
+			throw new FrogTestException(err, e);
 		}
 	}
 

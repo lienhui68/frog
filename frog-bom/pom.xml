@@ -14,6 +14,7 @@
     <properties>
         <frog.core.version>1.0.2-SNAPSHOT</frog.core.version>
         <frog.util.version>1.0.2-SNAPSHOT</frog.util.version>
+        <frog.plugin.version>1.0.2-SNAPSHOT</frog.plugin.version>
     </properties>
 
     <developers>
@@ -35,6 +36,11 @@
                 <artifactId>frog-util</artifactId>
                 <version>${frog.util.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.eh.frog</groupId>
+                <artifactId>frog-plugin</artifactId>
+                <version>${frog.util.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -46,6 +52,11 @@
         <dependency>
             <groupId>com.eh.frog</groupId>
             <artifactId>frog-util</artifactId>
+            <version>${frog.util.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.eh.frog</groupId>
+            <artifactId>frog-plugin</artifactId>
             <version>${frog.util.version}</version>
         </dependency>
 

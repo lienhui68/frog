@@ -17,19 +17,32 @@ import java.util.Map;
 @Data
 @ToString
 public class VirtualObject {
+
+	private static final VirtualObject EMPTY = new VirtualObject();
+
+
 	// 描述
 	private String desc;
 	// Object instance
 	private Object object;
 
-	/** flag,<class, <field name, flag value>> */
+	/**
+	 * flag,<class, <field name, flag value>>
+	 */
 	public Map<String, Map<String, String>> flags = new LinkedHashMap<>();
 
 	/**
 	 * Constructor.
 	 */
 	public VirtualObject() {
+	}
 
+	public static VirtualObject empty() {
+		return EMPTY;
+	}
+
+	public static VirtualObject of(Object value) {
+		return new VirtualObject(value);
 	}
 
 	/**

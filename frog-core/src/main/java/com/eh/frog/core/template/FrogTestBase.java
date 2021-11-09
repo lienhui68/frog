@@ -445,7 +445,7 @@ public class FrogTestBase implements ApplicationContextAware {
 				Map<String, Object> extendParams = frogRuntimeContext.getPrepareData().getExtendParams();
 				log.info("=====>plugin:{} call prepare...", p.getPluginSymbol());
 				if (Objects.nonNull(extendParams)) {
-					p.prepare(Optional.of(extendParams.get(p.getPluginSymbol())));
+					p.prepare(Optional.ofNullable(extendParams.get(p.getPluginSymbol())));
 				} else {
 					p.prepare(Optional.empty());
 				}
@@ -463,7 +463,7 @@ public class FrogTestBase implements ApplicationContextAware {
 				Map<String, Object> extendParams = frogRuntimeContext.getPrepareData().getExtendParams();
 				log.info("=====>plugin:{} call check...", p.getPluginSymbol());
 				if (Objects.nonNull(extendParams)) {
-					p.check(Optional.of(extendParams.get(p.getPluginSymbol())));
+					p.check(Optional.ofNullable(extendParams.get(p.getPluginSymbol())));
 				} else {
 					p.check(Optional.empty());
 				}
@@ -483,7 +483,7 @@ public class FrogTestBase implements ApplicationContextAware {
 				Map<String, Object> extendParams = frogRuntimeContext.getPrepareData().getExtendParams();
 				log.info("=====>plugin:{} call clean...", p.getPluginSymbol());
 				if (Objects.nonNull(extendParams)) {
-					p.clean(Optional.of(extendParams.get(p.getPluginSymbol())));
+					p.clean(Optional.ofNullable(extendParams.get(p.getPluginSymbol())));
 				} else {
 					p.clean(Optional.empty());
 				}

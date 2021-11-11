@@ -1,4 +1,4 @@
-OrderController_create_001: !!com.eh.frog.core.model.PrepareData
+OrderController_pay_001: !!com.eh.frog.core.model.PrepareData
   desc: 支付订单，check订单状态发生变化，测预跑反填功能
   args:
     - desc: 创建订单入参
@@ -16,5 +16,6 @@ OrderController_create_001: !!com.eh.frog.core.model.PrepareData
         - { order_amount: 220.25,order_id: 9173444395055435776,  order_time: '2021-10-08 14:37:10', order_status: 30, buyer_id: 1025229, is_valid: 1, gmt_create: today }
   expectResult:
     desc: 入参1
+    flags: { com.eh.frog.sample.base.Response: { data: Y }}
     object: !!com.eh.frog.sample.base.Response { data: true, error: '200', msg: 服务调用成功, status: 1 }
 

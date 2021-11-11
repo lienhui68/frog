@@ -15,6 +15,7 @@ import com.eh.frog.core.config.GlobalConfigurationHolder;
 import com.eh.frog.core.constants.FrogConfigConstants;
 import com.eh.frog.core.context.FrogRuntimeContext;
 import com.eh.frog.core.context.FrogRuntimeContextHolder;
+import com.eh.frog.core.context.TestDataFilePathHolder;
 import com.eh.frog.core.enums.YamlSerializeMode;
 import com.eh.frog.core.exception.FrogCheckException;
 import com.eh.frog.core.exception.FrogTestException;
@@ -151,6 +152,7 @@ public class FrogTestBase implements ApplicationContextAware {
 		if (Objects.isNull(frogConfig)) {
 			throw new FrogTestException("全局配置文件");
 		}
+		GlobalConfigurationHolder.setFrogConfigThreadLocal(frogConfig);
 		// 全局配置
 		frogConfig.getBaseConfig().ifPresent(GlobalConfigurationHolder::setGlobalConfiguration);
 		// 表selectKeys
@@ -215,7 +217,7 @@ public class FrogTestBase implements ApplicationContextAware {
 			prepare(frogRuntimeContext);
 			// execute
 			execute(frogRuntimeContext);
-			if (frogRuntimeContext.isEnablePrepareFill()) {
+			if (GlobalConfigurationHolder.getFrogConfig().isEnablePrepareFill()) {
 				// prepare fill
 				prepareFill();
 				PrepareFillDataHolder.clear();
@@ -236,7 +238,7 @@ public class FrogTestBase implements ApplicationContextAware {
 	private void prepareFill() {
 		PrepareData prepareData = PrepareFillDataHolder.getPrepareData();
 		// 获取反填临时文件路径
-		String path = GlobalConfigurationHolder.getGlobalConfiguration().get(FrogConfigConstants.PREPARE_FILL_TMP_FILE);
+		String path = org.apache.commons.lang.StringUtils.replace(TestDataFilePathHolder.getContext(), ".yaml", "_res.yaml");
 		if (StringUtils.isEmpty(path)) {
 			path = FrogConfigConstants.DEFAULT_PREPARE_FILL_TMP_FILE;
 		}

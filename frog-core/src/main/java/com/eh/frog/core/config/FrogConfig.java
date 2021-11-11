@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -59,5 +60,39 @@ public class FrogConfig {
 		public Optional<Map<String, List<String>>> getSpecialTableQueryConfig() {
 			return Optional.ofNullable(specialTableQueryConfig);
 		}
+	}
+
+	public boolean isEnablePrepareFill() {
+		if (Objects.isNull(baseConfig)) {
+			return false;
+		}
+		String str = baseConfig.get(FrogConfigConstants.PREPARE_RUN_BACK_FILL);
+		if (Objects.nonNull(str)) {
+			boolean b;
+			try {
+				b = Boolean.parseBoolean(str);
+			} catch (Exception e) {
+				return false;
+			}
+			return b;
+		}
+		return false;
+	}
+
+	public boolean isPrepareFillFlagFilter() {
+		if (Objects.isNull(baseConfig)) {
+			return false;
+		}
+		String str = baseConfig.get(FrogConfigConstants.PREPARE_FILL_FLAG_FILTER);
+		if (Objects.nonNull(str)) {
+			boolean b;
+			try {
+				b = Boolean.parseBoolean(str);
+			} catch (Exception e) {
+				return false;
+			}
+			return b;
+		}
+		return false;
 	}
 }

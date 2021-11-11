@@ -5,9 +5,12 @@
 package com.eh.frog.core.component.prepare;
 
 import com.eh.frog.core.component.db.DBDataProcessor;
+import com.eh.frog.core.config.GlobalConfigurationHolder;
+import com.eh.frog.core.context.FrogRuntimeContextHolder;
 import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.model.VirtualTable;
 import com.eh.frog.core.sqlparser.SqlParseResult;
+import com.google.common.collect.Maps;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.util.CollectionUtils;
@@ -37,24 +40,48 @@ public class DbPrepareFillHandler {
 		boolean occursFlag = false;
 		for (VirtualTable virtualTable : expectDataSet) {
 			if (virtualTable.getTableName().equalsIgnoreCase(sqlParseResult.getTableName())) {
-				virtualTable.getTableData().add(convertInsertDbData(sqlParseResult.getInsertColumnValueMap(), params));
+				virtualTable.getTableData().add(convertInsertDbDataByFlags(virtualTable.getTableName(), sqlParseResult.getInsertColumnValueMap(), params));
 				occursFlag = true;
 			}
 		}
 		if (!occursFlag) {
 			VirtualTable virtualTable = new VirtualTable();
 			virtualTable.setTableName(sqlParseResult.getTableName());
-			virtualTable.setTableData(Lists.newArrayList(convertInsertDbData(sqlParseResult.getInsertColumnValueMap(), params)));
+			virtualTable.setTableData(Lists.newArrayList(convertInsertDbDataByFlags(virtualTable.getTableName(), sqlParseResult.getInsertColumnValueMap(), params)));
 			prepareData.getExpectDataSet().add((virtualTable));
 		}
 
 	}
 
-	private static Map<String, Object> convertInsertDbData(LinkedHashMap<String, String> strData, List<Object> params) {
+	/**
+	 * @param strData
+	 * @param params
+	 * @return
+	 */
+	private static Map<String, Object> convertInsertDbDataByFlags(String tableName, LinkedHashMap<String, String> strData, List<Object> params) {
+		Map<String, String> flags = null;
+		if (GlobalConfigurationHolder.getFrogConfig().isPrepareFillFlagFilter()) {
+			List<VirtualTable> depDataSet = FrogRuntimeContextHolder.getContext().getPrepareData().getExpectDataSet();
+			if (!CollectionUtils.isEmpty(depDataSet)) {
+				// 判断是否添加该表
+				Optional<VirtualTable> first = depDataSet.stream().filter(t -> tableName.equals(t.getTableName())).findFirst();
+				if (first.isPresent()) {
+					flags = first.get().getFlags();
+				}
+			}
+		}
+
 		Map<String, Object> data = new LinkedHashMap<>();
 		int i = 0;
 		for (Map.Entry<String, String> entry : strData.entrySet()) {
 			String key = entry.getKey();
+			// 过滤
+			if (!CollectionUtils.isEmpty(flags)) {
+				String flag = flags.get(key);
+				if (Objects.isNull(flag) || "N".equalsIgnoreCase(flag)) {
+					continue;
+				}
+			}
 			String val = entry.getValue();
 			if (val.equalsIgnoreCase("today")) {
 				data.put(key, val);
@@ -103,14 +130,14 @@ public class DbPrepareFillHandler {
 		for (VirtualTable virtualTable : expectDataSet) {
 			if (virtualTable.getTableName().equalsIgnoreCase(sqlParseResult.getTableName())) {
 				// 分组过滤
-				virtualTable.getTableData().addAll(convertUpdateDbData(sqlParseResult.getTableName(), sqlParseResult.getUpdateConditionColumnValueMap(), dbDataProcessor));
+				virtualTable.getTableData().addAll(convertUpdateDbDataByFlags(sqlParseResult.getTableName(), sqlParseResult.getUpdateConditionColumnValueMap(), dbDataProcessor));
 				occursFlag = true;
 			}
 		}
 		if (!occursFlag) {
 			VirtualTable virtualTable = new VirtualTable();
 			virtualTable.setTableName(sqlParseResult.getTableName());
-			virtualTable.setTableData(convertUpdateDbData(sqlParseResult.getTableName(), sqlParseResult.getUpdateConditionColumnValueMap(), dbDataProcessor));
+			virtualTable.setTableData(convertUpdateDbDataByFlags(sqlParseResult.getTableName(), sqlParseResult.getUpdateConditionColumnValueMap(), dbDataProcessor));
 			prepareData.getExpectDataSet().add((virtualTable));
 		}
 
@@ -125,7 +152,7 @@ public class DbPrepareFillHandler {
 	 * @param dbDataProcessor
 	 * @return
 	 */
-	private static List<Map<String, Object>> convertUpdateDbData(String tableName, LinkedHashMap<String, String> whereCondition, DBDataProcessor dbDataProcessor) {
+	private static List<Map<String, Object>> convertUpdateDbDataByFlags(String tableName, LinkedHashMap<String, String> whereCondition, DBDataProcessor dbDataProcessor) {
 		StringBuilder wherePartBuilder = new StringBuilder();
 		for (Map.Entry<String, String> entry : whereCondition.entrySet()) {
 			String key = entry.getKey();
@@ -139,15 +166,40 @@ public class DbPrepareFillHandler {
 		String wherePart = wherePartBuilder.substring(0, wherePartBuilder.length() - 4);
 		String selectSql = "select * from " + tableName + " where " + wherePart;
 		List<Map<String, Object>> maps = dbDataProcessor.queryForList(selectSql);
+		// 过滤
+		Map<String, String> flags = null;
+		if (GlobalConfigurationHolder.getFrogConfig().isPrepareFillFlagFilter()) {
+			List<VirtualTable> depDataSet = FrogRuntimeContextHolder.getContext().getPrepareData().getExpectDataSet();
+			if (!CollectionUtils.isEmpty(depDataSet)) {
+				// 判断是否添加该表
+				Optional<VirtualTable> first = depDataSet.stream().filter(t -> tableName.equals(t.getTableName())).findFirst();
+				if (first.isPresent()) {
+					flags = first.get().getFlags();
+				}
+			}
+		}
+
+
+		Map<String, String> finalFlags = flags;
+		List<Map<String, Object>> result = Lists.newArrayList();
 		maps.forEach(map -> {
+			Map<String, Object> m = Maps.newHashMap();
 			map.forEach((k, v) -> {
+				// 过滤
+				if (!CollectionUtils.isEmpty(finalFlags)) {
+					String flag = finalFlags.get(k);
+					if (Objects.isNull(flag) || "N".equalsIgnoreCase(flag)) {
+						return;
+					}
+				}
 				if (v instanceof Date) {
 					v = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(v);
-					map.put(k, v);
 				}
+				m.put(k, v);
 			});
+			result.add(m);
 		});
-		return maps;
+		return result;
 	}
 
 

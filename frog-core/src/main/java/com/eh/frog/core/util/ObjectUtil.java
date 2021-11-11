@@ -18,6 +18,7 @@ package com.eh.frog.core.util;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.eh.frog.core.enums.PrepareFillDbType;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.enums.EnumUtils;
 import org.apache.commons.logging.Log;
@@ -34,6 +35,12 @@ import java.util.*;
 public class ObjectUtil {
 
 	private static final Log log = LogFactory.getLog(ObjectUtil.class);
+
+	private static final String[] comparableTypes = {"int", "float", "double",
+			"long", "short", "byte", "boolean", "char", "java.lang.Integer", "java.lang.Float",
+			"java.lang.Double", "java.lang.Long", "java.lang.Short", "java.lang.Byte",
+			"java.lang.Boolean", "java.lang.Character", "java.lang.String", "java.math.BigDecimal",
+			"java.util.Date"};
 
 	/**
 	 * Parse the target object from a string
@@ -223,6 +230,21 @@ public class ObjectUtil {
 		return result;
 	}
 
+	public static boolean isBasicType(Object obj) {
+		// 枚举值特殊处理，也当成基础类型
+		if (obj instanceof Enum) {
+			return true;
+		}
+		String name = obj.getClass().getName();
+		for (String comparableType : comparableTypes) {
+			if (comparableType.equals(name)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+
 	/**
 	 * The object's serialized string
 	 *
@@ -245,4 +267,5 @@ public class ObjectUtil {
 		}
 		return null;
 	}
+
 }

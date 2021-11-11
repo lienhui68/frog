@@ -7,7 +7,7 @@
     <groupId>com.eh.frog</groupId>
     <artifactId>frog-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <modules>
         <module>frog-sample</module>
         <module>frog-core</module>
@@ -17,8 +17,9 @@
     </modules>
 
     <properties>
-        <frog.version>1.0.2-SNAPSHOT</frog.version>
-        <junit.jupiter.version>5.7.0</junit.jupiter.version>
+        <frog.core.version>2.0.0-SNAPSHOT</frog.core.version>
+        <frog.plugin.version>2.0.0-SNAPSHOT</frog.plugin.version>
+        <frog.util.version>2.0.0-SNAPSHOT</frog.util.version>
     </properties>
 
     <dependencyManagement>

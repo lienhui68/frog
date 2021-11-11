@@ -7,13 +7,19 @@ package com.eh.frog.core.component.handler;
 import com.eh.frog.core.component.event.EventContextHolder;
 import com.eh.frog.core.component.mock.MockContextHolder;
 import com.eh.frog.core.component.mock.MockRestorePojo;
+import com.eh.frog.core.component.prepare.PrepareFillDataHolder;
+import com.eh.frog.core.config.GlobalConfigurationHolder;
 import com.eh.frog.core.context.FrogRuntimeContext;
+import com.eh.frog.core.context.FrogRuntimeContextHolder;
 import com.eh.frog.core.exception.FrogCheckException;
 import com.eh.frog.core.exception.FrogTestException;
+import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.model.VirtualEventGroup;
 import com.eh.frog.core.model.VirtualObject;
+import com.eh.frog.core.util.CollectionUtil;
 import com.eh.frog.core.util.ObjectCompareUtil;
 import com.eh.frog.core.util.ObjectUtil;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
@@ -229,6 +235,16 @@ public class TestUnitHandler {
 					frogRuntimeContext.setExceptionObj(e.getCause());
 				}
 				frogRuntimeContext.setResultObj(resultObj);
+				// 预跑反填
+				if (GlobalConfigurationHolder.getFrogConfig().isEnablePrepareFill()) {
+					// 获取待填PrepareData
+					PrepareData prepareData = PrepareFillDataHolder.getPrepareData();
+					VirtualObject resultVirtualObject = VirtualObject.of(resultObj);
+					prepareData.setExpectResult(resultVirtualObject);
+
+					Map<String, Map<String, String>> resultFlags = getResultFlags();
+					prepareData.setExpectResult(VirtualObject.of(CollectionUtil.filterObjByFlags(resultObj, GlobalConfigurationHolder.getFrogConfig().isPrepareFillFlagFilter(), resultFlags)));
+				}
 
 			} else {
 				log.info("Test method not found, interrupt invocation");
@@ -236,6 +252,17 @@ public class TestUnitHandler {
 		} catch (Exception e) {
 			throw new RuntimeException("unknown exception while invocation", e);
 		}
+	}
+
+	private Map<String, Map<String, String>> getResultFlags() {
+		Map<String, Map<String, String>> flags = Maps.newHashMap();
+		if (GlobalConfigurationHolder.getFrogConfig().isPrepareFillFlagFilter()) {
+			VirtualObject expectResult = FrogRuntimeContextHolder.getContext().getPrepareData().getExpectResult();
+			if (Objects.nonNull(expectResult)) {
+				flags = expectResult.getFlags();
+			}
+		}
+		return flags;
 	}
 
 	/**

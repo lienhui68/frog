@@ -1,5 +1,5 @@
 OrderController_create_001: !!com.eh.frog.core.model.PrepareData
-  desc: 成功创建订单，优惠开关打开
+  desc: T成功创建订单，优惠开关打开
   args:
     - desc: 创建订单入参
       object: !!com.eh.frog.sample.orm.bean.Order { buyerId: 1025229, gmtCreate: null, gmtModified: null, id: null, isValid: null,
@@ -22,10 +22,12 @@ OrderController_create_001: !!com.eh.frog.core.model.PrepareData
         - { order_amount: 220.25, order_time: '2021-10-08 14:37:10', order_status: 1, buyer_id: 1025229, is_valid: 1, gmt_create: today }
   expectEventSet:
     - desc: 订单创建成功消息
-      flags: { com.eh.frog.sample.mq.model.OrderEventMessage: {orderId: L1, orderTime: D5} }
+      flags: { com.eh.frog.sample.mq.model.OrderEventMessage: {orderId: L1, orderTime: D5, coupon: Y},
+               com.eh.frog.sample.rpc.response.Coupon: {userId: Y, couponId: Y, couponAmount: Y}}
       msgClass: com.eh.frog.sample.mq.model.OrderEventMessage
       objects:
-        - !!com.eh.frog.sample.mq.model.OrderEventMessage { eventType: CREATE, orderAmount: 220.25, orderId: 123, orderTime: 2021-10-08 14:37:08 }
+        - !!com.eh.frog.sample.mq.model.OrderEventMessage { eventType: CREATE, orderAmount: 220.25, orderId: 123, orderTime: 2021-10-08 14:37:08,
+                coupon: {couponAmount: 5.00, couponId: 9999, userId: 1025229} }
   expectResult:
     desc: 入参1
     object: !!com.eh.frog.sample.base.Response { data: true, error: '200', msg: 服务调用成功, status: 1 }
@@ -61,7 +63,7 @@ OrderController_create_002: !!com.eh.frog.core.model.PrepareData
         - { user_name: 武松, user_id: 1025229 }
     - tableName: tbl_order
       tableBaseDesc: 订单表
-      flags: { gmt_create: D200 }
+      flags: { gmt_create: D200, order_time: Y }
       tableData:
         - { order_amount: 225.25, order_time: '2021-10-08 14:37:10', order_status: 1, buyer_id: 1025229, is_valid: 1, gmt_create: today }
   expectEventSet:
@@ -85,7 +87,7 @@ OrderController_create_002: !!com.eh.frog.core.model.PrepareData
       configValue: false
 
 OrderController_create_003: !!com.eh.frog.core.model.PrepareData
-  desc: T成功创建订单，优惠开关关闭,使用redis插件
+  desc: 成功创建订单，优惠开关关闭,使用redis插件
   args:
     - desc: 创建订单入参
       object: !!com.eh.frog.sample.orm.bean.Order { buyerId: 1025229, gmtCreate: null, gmtModified: null,

@@ -3,6 +3,7 @@ baseConfig:
   datasourceBeanName: dataSource
   prepareRunBackFill: true
   testDataFolder: data
+  prepareFillFlagFilter: true
 #  testOnly: ^T
   postProcessClean: false
 tableQueryConfig:

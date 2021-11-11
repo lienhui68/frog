@@ -5,6 +5,7 @@
 package com.eh.frog.sample.mq.model;
 
 import com.eh.frog.sample.enums.OrderEventType;
+import com.eh.frog.sample.rpc.response.Coupon;
 import lombok.Data;
 import lombok.ToString;
 
@@ -22,4 +23,6 @@ public class OrderEventMessage {
 	private OrderEventType eventType;
 	private BigDecimal orderAmount;
 	private Date orderTime;
+
+	private Coupon coupon;
 }

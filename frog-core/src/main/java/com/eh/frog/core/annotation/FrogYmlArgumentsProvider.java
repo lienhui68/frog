@@ -10,6 +10,7 @@ import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.util.FrogFileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
@@ -76,6 +77,7 @@ public class FrogYmlArgumentsProvider implements ArgumentsProvider, AnnotationCo
 				Object[] args = new Object[]{caseId, desc, prepareDatas.get(caseId)};
 				prepareDataList.add(args);
 			}
+			Assertions.assertTrue(prepareDataList.size() > 0, "no execute case found");
 			return prepareDataList.stream().map(this::toArguments);
 		} catch (Exception e) {
 			throw new RuntimeException(e);

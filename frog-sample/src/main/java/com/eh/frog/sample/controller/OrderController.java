@@ -46,8 +46,9 @@ public class OrderController {
 		// 实际订单金额
 		BigDecimal actualOrderAmount = order.getOrderAmount();
 		// 如果业务开关打开，需要走优惠逻辑
+		Coupon coupon = null;
 		if (OrderLionConfig.getBizSwitch()) {
-			Coupon coupon = couponRpcService.getCoupon(order.getBuyerId(), order.getOrderAmount());
+			coupon = couponRpcService.getCoupon(order.getBuyerId(), order.getOrderAmount());
 			// 更新实际金额
 			actualOrderAmount = actualOrderAmount.subtract(coupon.getCouponAmount());
 		}
@@ -60,6 +61,7 @@ public class OrderController {
 		orderEventMessage.setEventType(OrderEventType.CREATE);
 		orderEventMessage.setOrderAmount(order.getOrderAmount());
 		orderEventMessage.setOrderTime(order.getOrderTime());
+		orderEventMessage.setCoupon(coupon);
 		orderEventSender.sendMessage(orderEventMessage);
 		return Response.success(true);
 	}

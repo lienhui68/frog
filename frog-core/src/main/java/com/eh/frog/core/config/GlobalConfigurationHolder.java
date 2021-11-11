@@ -18,6 +18,8 @@ import java.util.Optional;
  */
 public class GlobalConfigurationHolder {
 
+	public static ThreadLocal<FrogConfig> frogConfigThreadLocal = new ThreadLocal<>();
+
 	public static ThreadLocal<Map<String, String>> globalConfigurationThreadLocal = new ThreadLocal<>();
 
 	/**
@@ -66,5 +68,13 @@ public class GlobalConfigurationHolder {
 
 	public static void setExtensionConfig(Map<String, Map<String, Object>> extensionConfig) {
 		extensionConfigThreadLocal.set(extensionConfig);
+	}
+
+	public static FrogConfig getFrogConfig() {
+		return frogConfigThreadLocal.get();
+	}
+
+	public static void setFrogConfigThreadLocal(FrogConfig frogConfig) {
+		frogConfigThreadLocal.set(frogConfig);
 	}
 }

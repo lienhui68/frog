@@ -5,6 +5,8 @@
 package com.eh.frog.core.util;
 
 import com.eh.frog.core.config.FrogConfig;
+import com.eh.frog.core.config.GlobalConfigurationHolder;
+import com.eh.frog.core.context.TestDataFilePathHolder;
 import com.eh.frog.core.enums.YamlSerializeMode;
 import com.eh.frog.core.exception.FrogTestException;
 import com.eh.frog.core.model.PrepareData;
@@ -24,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 
+import static com.eh.frog.core.constants.FrogConfigConstants.TEST_DATA_FOLDER;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -76,6 +79,9 @@ public class FrogFileUtil {
 		InputStream is;
 		try {
 			yamlFile = walkTestResourceFile(folder, fileName, classLoader);
+			// 记录文件路径
+			String relativePath = yamlFile.getAbsolutePath().substring(yamlFile.getAbsolutePath().indexOf(GlobalConfigurationHolder.getGlobalConfiguration().get(TEST_DATA_FOLDER)));
+			TestDataFilePathHolder.setContext(relativePath);
 			is = new FileInputStream(yamlFile);
 			InputStreamReader reader = new InputStreamReader(is);
 			Yaml yaml = new Yaml(new DateYamlConstructor());

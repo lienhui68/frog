@@ -36,6 +36,10 @@ public final class FrogConfigConstants {
 	 */
 	public static final String PREPARE_FILL_TMP_FILE = "prepareFillTmpFile";
 	/**
+	 * 预跑反填是否根据flag过滤(应付宽表、大POJO)
+	 */
+	public static final String PREPARE_FILL_FLAG_FILTER = "prepareFillFlagFilter";
+	/**
 	 * 筛选用例执行
 	 */
 	public static final String TEST_ONLY = "testOnly";

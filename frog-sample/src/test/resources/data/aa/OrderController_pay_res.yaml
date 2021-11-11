@@ -1,0 +1,19 @@
+!!yaml
+args: null
+depDataSet: null
+desc: 支付订单，check订单状态发生变化，测预跑反填功能
+expectDataSet:
+- flags: {}
+  tableBaseDesc: null
+  tableData:
+  - {gmt_create: '2021-11-11 12:44:42'}
+  tableName: tbl_order
+expectEventSet: null
+expectException: null
+expectResult:
+  desc: null
+  flags: {}
+  object: {data: true}
+extendParams: null
+virtualConfigSet: null
+virtualMockSet: null

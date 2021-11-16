@@ -7,23 +7,36 @@ package com.eh.frog.core.component.handler;
 import com.eh.frog.core.component.event.EventContextHolder;
 import com.eh.frog.core.component.mock.MockContextHolder;
 import com.eh.frog.core.component.mock.MockRestorePojo;
+import com.eh.frog.core.component.mock.reflect.Invoker;
 import com.eh.frog.core.component.prepare.PrepareFillDataHolder;
 import com.eh.frog.core.config.GlobalConfigurationHolder;
 import com.eh.frog.core.context.FrogRuntimeContext;
 import com.eh.frog.core.context.FrogRuntimeContextHolder;
 import com.eh.frog.core.exception.FrogCheckException;
 import com.eh.frog.core.exception.FrogTestException;
+import com.eh.frog.core.model.CheckFlag;
 import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.model.VirtualEventGroup;
 import com.eh.frog.core.model.VirtualObject;
+import com.eh.frog.core.model.ext.MockUnit;
 import com.eh.frog.core.util.CollectionUtil;
 import com.eh.frog.core.util.ObjectCompareUtil;
 import com.eh.frog.core.util.ObjectUtil;
+import com.eh.frog.core.util.StringUtil;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -80,9 +93,15 @@ public class TestUnitHandler {
 				// init mock
 				frogRuntimeContext.getPrepareData().getVirtualMockSet().forEach(m -> {
 					String target = m.getTarget();
-					Object obj = m.getObject();
-					log.info("mock: {}\n 返回:{}", target, ObjectUtil.toJson(obj));
-					mockBeanService(target, m.getContainerBeanName(), m.getTargetBeanName(), m.getContainer(), m.getFieldName(), obj);
+					Object obj = m.getDefaultObj();
+					List<MockUnit> mockUnits = m.getMockUnits();
+					if (Objects.nonNull(obj)) {
+						log.info("mock: {}\n 返回:{}", target, ObjectUtil.toJson(obj));
+					} else if (Objects.nonNull(mockUnits)) {
+						log.info("mock: {}\n 返回:{}", target, ObjectUtil.toJson(mockUnits));
+					}
+
+					mockBeanService(target, m.getContainerBeanName(), m.getContainer(), m.getFieldName(), obj, mockUnits);
 				});
 				// 刷新bean,防止container就是测试对象
 				frogRuntimeContext.setTestedObj(frogRuntimeContext.getApplicationContext().getBean(frogRuntimeContext.getTestedObj().getClass()));
@@ -97,7 +116,7 @@ public class TestUnitHandler {
 		}
 	}
 
-	private void mockBeanService(String target, String containerBeanName, String targetBeanName, String container, String fieldName, Object obj) {
+	private void mockBeanService(String target, String containerBeanName, String container, String fieldName, Object obj, List<MockUnit> mockUnits) {
 		try {
 			String[] ss = target.split("#");
 			String fullClassName = ss[0];
@@ -111,10 +130,10 @@ public class TestUnitHandler {
 			// 类
 			Class clazz = Class.forName(fullClassName);
 			// 方法
-			Method method = Class.forName(ss[0]).getDeclaredMethod(methodName, paramClasses);
+			Method method = clazz.getDeclaredMethod(methodName, paramClasses);
 			method.setAccessible(true);
 			// mock
-			mockBeanService(clazz, containerBeanName, targetBeanName, container, fieldName, method, obj);
+			mockBeanService(clazz, containerBeanName, container, fieldName, method, obj, mockUnits);
 		} catch (Exception e) {
 			throw new FrogTestException("解析目标服务出错:" + target, e);
 		}
@@ -130,26 +149,8 @@ public class TestUnitHandler {
 	 * @throws InvocationTargetException
 	 * @throws IllegalAccessException
 	 */
-	private <T> void mockBeanService(Class<T> clazz, String containerBeanName, String targetBeanName, String container, String fieldName, Method method, T rt) throws InvocationTargetException, IllegalAccessException {
+	private <T> void mockBeanService(Class<T> clazz, String containerBeanName, String container, String fieldName, Method method, T rt, List<MockUnit> mockUnits) throws InvocationTargetException, IllegalAccessException {
 
-		Object target;
-		if (StringUtils.isEmpty(targetBeanName)) {
-			target = frogRuntimeContext.getApplicationContext().getBean(clazz);
-		} else {
-			target = frogRuntimeContext.getApplicationContext().getBean(targetBeanName);
-		}
-		// 动态代理
-		// 代理对象的方法最终都会被JVM导向它的invoke方法
-		Object mock = Proxy.newProxyInstance(
-				target.getClass().getClassLoader(), // 类加载器
-				target.getClass().getInterfaces(), // 让代理对象和目标对象实现相同接口
-				(proxy, method1, args) -> {
-					if (method1.equals(method)) {
-						return rt;
-					} else {
-						return method1.invoke(target, args);
-					}
-				});
 
 		try {
 			// 获取container
@@ -160,21 +161,57 @@ public class TestUnitHandler {
 				containerBean = frogRuntimeContext.getApplicationContext().getBean(containerBeanName);
 			}
 
+			// 属性名
 			if (StringUtils.isEmpty(fieldName)) {
 				fieldName = clazz.getSimpleName();
 				char[] chars = fieldName.toCharArray();
 				chars[0] += 32;
 				fieldName = String.valueOf(chars);
 			}
+
+			// 生成代理类
+			Object target = Invoker.getInstance(method, rt, mockUnits);
+
 			// 保护现场
 			MockContextHolder.setMockRestorePojo(new MockRestorePojo(containerBean, target, fieldName));
-			Field f = containerBean.getClass().getDeclaredField(fieldName);
-			f.setAccessible(true);
-			f.set(containerBean, mock);
+			// 替换
+			Field ff = containerBean.getClass().getDeclaredField(fieldName);
+			ff.setAccessible(true);
+			ff.set(containerBean, target);
 		} catch (NoSuchFieldException | ClassNotFoundException e) {
 			throw new FrogTestException("mock数据error", e);
 		}
 
+	}
+
+	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		//如果传进来是一个已实现的具体类（本次演示略过此逻辑)
+		if (Object.class.equals(method.getDeclaringClass())) {
+			try {
+				return method.invoke(this, args);
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			//如果传进来的是一个接口（核心)
+		} else {
+			return run(method, args);
+		}
+		return null;
+	}
+
+	/**
+	 * 实现接口的核心方法
+	 *
+	 * @param method
+	 * @param args
+	 * @return
+	 */
+	public Object run(Method method, Object[] args) {
+		//TODO
+		//如远程http调用
+		//如远程方法调用（rmi)
+		//....
+		return "method call success!";
 	}
 
 	/**
@@ -230,6 +267,13 @@ public class TestUnitHandler {
 					log.info("Start to invoke method:" + frogRuntimeContext.getTestedMethod().getName());
 					resultObj = frogRuntimeContext.getTestedMethod().invoke(frogRuntimeContext.getTestedObj(), paramObjs);
 					log.info("Invocation result: " + ObjectUtil.toJson(resultObj));
+				} catch (InvocationTargetException e) {
+					// 处理反射时抛出frog异常被wrap掉的情况
+					if (Objects.nonNull(e.getTargetException()) && e.getTargetException() instanceof FrogTestException) {
+						throw (FrogTestException) e.getTargetException();
+					}
+				} catch (FrogTestException e) {
+					throw e;
 				} catch (Exception e) {
 					log.info("bad getErrorInfoFromException");
 					frogRuntimeContext.setExceptionObj(e.getCause());
@@ -306,7 +350,8 @@ public class TestUnitHandler {
 				log.info("None DB expectation");
 			}
 		} catch (FrogCheckException e) {
-			throw new FrogCheckException("\n======>期望DB数据校验失败, 失败原因:{}", e.getMessage());
+			String err = StringUtil.buildMessage("\n======>期望DB数据校验失败, 失败原因:{}", e.getMessage());
+			throw new FrogCheckException(err, e);
 		} catch (Exception e) {
 			throw new FrogTestException("unknown exception while checking DB", e);
 		}
@@ -329,7 +374,8 @@ public class TestUnitHandler {
 				log.info("None result expectation");
 			}
 		} catch (FrogCheckException e) {
-			throw new FrogCheckException("\n======>期望结果数据校验失败, 失败原因:{}", e.getMessage());
+			String err = StringUtil.buildMessage("\n======>期望结果数据校验失败, 失败原因:{}", e.getMessage());
+			throw new FrogCheckException(err, e);
 		} catch (Exception e) {
 			throw new FrogTestException("unknown exception while checking invocation result", e);
 		}
@@ -354,7 +400,8 @@ public class TestUnitHandler {
 				log.info("Skip event check in rpc mode");
 			}
 		} catch (FrogCheckException e) {
-			throw new FrogCheckException("\n======>期望消息数据校验失败, 失败原因:{}", e.getMessage());
+			String err = StringUtil.buildMessage("\n======>期望消息数据校验失败, 失败原因:{}", e.getMessage());
+			throw new FrogCheckException(err, e);
 		} catch (
 				Exception e) {
 			throw new FrogTestException("unknown exception raised while checking events", e);

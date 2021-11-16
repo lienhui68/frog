@@ -9,7 +9,9 @@ import com.eh.frog.core.util.StringUtil;
 import com.eh.frog.plugin.redis.model.RedisDataUnit;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
+import org.springframework.util.CollectionUtils;
 import redis.clients.jedis.JedisCluster;
 
 import java.util.List;
@@ -34,10 +36,16 @@ public class ClusterRedisTestUnitHandler {
 	}
 
 	public void cleanData(List<RedisDataUnit> deptStringUnits, List<RedisDataUnit> expectStringUnits) {
-		List<String> prepareKeys = deptStringUnits.stream().map(u -> u.getKey()).collect(Collectors.toList());
-		List<String> expectKeys = expectStringUnits.stream().map(u -> u.getKey()).collect(Collectors.toList());
-		prepareKeys.addAll(expectKeys);
-		prepareKeys.stream().distinct().forEach(this::cleanData);
+		List<String> keys = Lists.newArrayList();
+		if (!CollectionUtils.isEmpty(deptStringUnits)) {
+			List<String> prepareKeys = deptStringUnits.stream().map(u -> u.getKey()).collect(Collectors.toList());
+			keys.addAll(prepareKeys);
+		}
+		if (!CollectionUtils.isEmpty(expectStringUnits)) {
+			List<String> expectKeys = expectStringUnits.stream().map(u -> u.getKey()).collect(Collectors.toList());
+			keys.addAll(expectKeys);
+		}
+		keys.stream().distinct().forEach(this::cleanData);
 
 	}
 

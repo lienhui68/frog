@@ -245,7 +245,7 @@ public class FrogTestBase implements ApplicationContextAware {
 		// 创建文件
 		Yaml yaml = new Yaml();
 		String content = yaml.dumpAs(prepareData, Tag.YAML, DumperOptions.FlowStyle.AUTO);
-		FrogFileUtil.writeFile(path, content, YamlSerializeMode.APPEND);
+		FrogFileUtil.writeFile(path, content, YamlSerializeMode.CREATE);
 	}
 
 	/**

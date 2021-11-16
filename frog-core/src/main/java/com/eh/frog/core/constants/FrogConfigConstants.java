@@ -32,10 +32,6 @@ public final class FrogConfigConstants {
 	 */
 	public static final String PREPARE_RUN_BACK_FILL = "prepareRunBackFill";
 	/**
-	 * 预跑反填临时文件路径,默认data/prepare.yaml
-	 */
-	public static final String PREPARE_FILL_TMP_FILE = "prepareFillTmpFile";
-	/**
 	 * 预跑反填是否根据flag过滤(应付宽表、大POJO)
 	 */
 	public static final String PREPARE_FILL_FLAG_FILTER = "prepareFillFlagFilter";

@@ -9,9 +9,14 @@ import com.eh.frog.core.component.event.MessageEventAdvice;
 import com.eh.frog.core.component.prepare.MybatisPlugin4Prepare;
 import com.eh.frog.core.constants.FrogConfigConstants;
 import com.eh.frog.core.util.FrogFileUtil;
+import org.apache.ibatis.plugin.Interceptor;
+import org.mybatis.spring.SqlSessionFactoryBean;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author f90fd4n david
@@ -19,6 +24,9 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class FrogComponentAutoConfiguration {
+
+	@Autowired(required = false)
+	private SqlSessionFactoryBean sqlSessionFactoryBean;
 
 	@FrogConditionalOnProperty(FrogConfigConstants.MESSAGE_EVENT_POI)
 	@Bean
@@ -32,8 +40,13 @@ public class FrogComponentAutoConfiguration {
 
 	@FrogConditionalOnProperty(value = FrogConfigConstants.PREPARE_RUN_BACK_FILL, havingValue = "true")
 	@Bean
-	public MybatisPlugin4Prepare mybatisPlugin4Prepare() {
+	public Interceptor mybatisPlugin4Prepare() throws Exception {
 		MybatisPlugin4Prepare mybatisPlugin4Prepare = new MybatisPlugin4Prepare();
+		// 兼容自定义sqlSessionFactoryBean（没有使用MybatisAutoConfiguration方式注入）时，设置plugins没有扫描容器中Interceptor，做到对业务代码无侵入
+		if (!ObjectUtils.isEmpty(sqlSessionFactoryBean)) {
+			org.apache.ibatis.session.Configuration configuration = sqlSessionFactoryBean.getObject().getConfiguration();
+			configuration.addInterceptor(mybatisPlugin4Prepare);
+		}
 		return mybatisPlugin4Prepare;
 	}
 }

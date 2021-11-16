@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.enums.EnumUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.jupiter.api.Assertions;
 import org.springframework.aop.framework.AopProxyUtils;
 
 import java.lang.reflect.Field;
@@ -231,6 +232,24 @@ public class ObjectUtil {
 	}
 
 	public static boolean isBasicType(Object obj) {
+		if (Objects.isNull(obj)) {
+			return true;
+		}
+		// 枚举值特殊处理，也当成基础类型
+		if (obj instanceof Enum) {
+			return true;
+		}
+		String name = obj.getClass().getName();
+		for (String comparableType : comparableTypes) {
+			if (comparableType.equals(name)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isNonNullBasicType(Object obj) {
+		Assertions.assertNotNull(obj);
 		// 枚举值特殊处理，也当成基础类型
 		if (obj instanceof Enum) {
 			return true;

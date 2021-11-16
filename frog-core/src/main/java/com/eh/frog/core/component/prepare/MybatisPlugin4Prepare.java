@@ -12,10 +12,7 @@ import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ParameterMapping;
-import org.apache.ibatis.plugin.Interceptor;
-import org.apache.ibatis.plugin.Intercepts;
-import org.apache.ibatis.plugin.Invocation;
-import org.apache.ibatis.plugin.Signature;
+import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.TypeHandlerRegistry;
@@ -25,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 
 /**
  * @author f90fd4n david
@@ -97,7 +95,9 @@ public class MybatisPlugin4Prepare implements Interceptor {
 
 	private String replaceSql(String sql, Object parameterObject) {
 		String result;
-		if (parameterObject instanceof String) {
+		if (Objects.isNull(parameterObject)) {
+			result = null;
+		} else if (parameterObject instanceof String) {
 			result = "'" + parameterObject.toString() + "'";
 		} else if (parameterObject instanceof Date) {
 			result = "'" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(parameterObject) + "'";
@@ -109,5 +109,26 @@ public class MybatisPlugin4Prepare implements Interceptor {
 
 	private String beautifySql(String sql) {
 		return sql.replaceAll("[\\s\n]+", " ");
+	}
+
+	/**
+	 * 兼容低版本mybatis没有写默认方法
+	 *
+	 * @param target
+	 * @return
+	 */
+	@Override
+	public Object plugin(Object target) {
+		return Plugin.wrap(target, this);
+	}
+
+	/**
+	 * 兼容低版本mybatis没有写默认方法
+	 *
+	 * @param properties
+	 */
+	@Override
+	public void setProperties(Properties properties) {
+		// NOP
 	}
 }

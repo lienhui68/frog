@@ -11,28 +11,32 @@ import com.eh.frog.sample.orm.bean.User;
 import com.eh.frog.sample.orm.dao.OrderMapper;
 import com.eh.frog.sample.orm.dao.UserMapper;
 import com.eh.frog.sample.rpc.response.Coupon;
+import com.eh.frog.sample.rpc.virtual.CouponReq;
 import com.eh.frog.sample.rpc.virtual.CouponRpcService;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 
 @Slf4j
-@AllArgsConstructor
 @RestController
 public class OrderController {
 
 	// 数据库操作
-	private final OrderMapper orderMapper;
-	private final UserMapper userMapper;
+	@Autowired
+	private OrderMapper orderMapper;
+	@Autowired
+	private UserMapper userMapper;
 	// 消息发送
-	private final OrderEventSender orderEventSender;
+	@Autowired
+	private OrderEventSender orderEventSender;
 	// rpc服务
-	private final CouponRpcService couponRpcService;
+	@Autowired
+	private CouponRpcService couponRpcService;
 
 	@PostMapping("/order/create")
 	public Response<Boolean> create(@Param("order") Order order) {
@@ -48,7 +52,7 @@ public class OrderController {
 		// 如果业务开关打开，需要走优惠逻辑
 		Coupon coupon = null;
 		if (OrderLionConfig.getBizSwitch()) {
-			coupon = couponRpcService.getCoupon(order.getBuyerId(), order.getOrderAmount());
+			coupon = couponRpcService.getCoupon(order.getBuyerId(), order.getOrderAmount(), new CouponReq("bbb", 1));
 			// 更新实际金额
 			actualOrderAmount = actualOrderAmount.subtract(coupon.getCouponAmount());
 		}

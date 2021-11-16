@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.assertj.core.util.Lists;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.CollectionUtils;
 
 import javax.sql.DataSource;
 import java.text.ParseException;
@@ -113,7 +114,7 @@ public class DBDataProcessor {
 		}
 		for (int i = 0; i < depTables.size(); i++) {
 			VirtualTable record = depTables.get(i);
-			if (record == null) {
+			if (record == null || CollectionUtils.isEmpty(record.getTableData())) {
 				continue;
 			}
 			// 表名

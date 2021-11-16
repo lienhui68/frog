@@ -18,8 +18,11 @@ package com.eh.frog.core.util;
 
 import com.eh.frog.core.exception.FrogCheckException;
 import com.eh.frog.core.exception.FrogTestException;
+import com.eh.frog.core.model.CheckFlag;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -36,7 +39,9 @@ import java.util.regex.Pattern;
 public class ObjectCompareUtil {
 
 	// Y:Ordinary verification,N:not check，R:Regular check <className,<fieldName,flag>>
-	public static Map<String, Map<String, String>> varFlagMap = new HashMap<>();
+	public static Map<String, Map<String, String>> varFlagMap;
+	// className, 对象是否填充过标志
+	public static Map<String, Boolean> checkFlagFilled;
 
 	private static final String[] comparableTypes = {"int", "float", "double",
 			"long", "short", "byte", "boolean", "char", "java.lang.Integer", "java.lang.Float",
@@ -46,6 +51,7 @@ public class ObjectCompareUtil {
 
 	public static void compare(Object actual, Object expect, Map<String, Map<String, String>> flags) {
 		varFlagMap = flags;
+		checkFlagFilled = new HashMap<>();
 		log.info("\n对象比较：expect:" + ObjectUtil.toJson(expect) + "\nactual:"
 				+ ObjectUtil.toJson(actual));
 		compareByFields(actual, expect);
@@ -81,7 +87,7 @@ public class ObjectCompareUtil {
 		Class<?> objType = actual.getClass();
 
 
-		if (isComparable(objType)) { // 常规类型
+		if (ObjectUtil.isNonNullBasicType(actual)) { // 常规类型
 			compare(actual, expect);
 		} else if (objType.isArray()) { // 数组
 			Object[] targetArray = (Object[]) actual;
@@ -153,6 +159,11 @@ public class ObjectCompareUtil {
 			}
 		} else { // 对象比较
 			Map<String, String> objFlag = null;
+			// 这里使用HashMap.putAll实现深拷贝，主要是HashMap,如果是声明成Map则是浅拷贝
+			Boolean fillFlag = checkFlagFilled.get(expect.getClass().getName());
+			if (Objects.isNull(fillFlag) || !fillFlag) {
+				fillObjFlag(expect, varFlagMap);
+			}
 			if (!(varFlagMap == null || varFlagMap.isEmpty())) {
 				objFlag = varFlagMap.get(objName);
 			}
@@ -196,9 +207,9 @@ public class ObjectCompareUtil {
 					objExpect = field.get(expect);
 
 					if (objFlag != null && objFlag.get(fieldName) != null) {
-						if (objFlag.get(fieldName).equals("N")) {
+						if (CheckFlag.NOT_CHECK_FLAG.equals(objFlag.get(fieldName))) {
 							continue;
-						} else if (objFlag.get(fieldName).equals("R")) {
+						} else if (CheckFlag.REGEX_FLAG.equals(objFlag.get(fieldName))) {
 							Pattern pattern = Pattern.compile((String) objExpect);
 							Matcher matcher = pattern.matcher((String) objActual);
 							boolean matchRes = matcher.matches();
@@ -208,7 +219,7 @@ public class ObjectCompareUtil {
 										+ " expect value is " + expect);
 							}
 							continue;
-						} else if ((objFlag.get(fieldName)).startsWith("D")) {
+						} else if ((objFlag.get(fieldName)).startsWith(CheckFlag.DATE_FLAG)) {
 
 							if (null == objActual) {
 								boolean isEqual = (null == objExpect);
@@ -238,11 +249,11 @@ public class ObjectCompareUtil {
 							 * There are two cases, one is directly D, and the other is D200.
 							 * The D is directly compared with the time stored in yaml,D200 is compared with the current time.
 							 */
-							if (currentFlag.equals("D")) {
+							if (currentFlag.equals(CheckFlag.DATE_FLAG)) {
 								compare(real, expect1);
 								continue;
 							} else {
-								long timeFlow = Long.valueOf(currentFlag.replace("D", ""));
+								long timeFlow = Long.valueOf(currentFlag.replace(CheckFlag.DATE_FLAG, ""));
 								Long realTime = real.getTime();
 								Long expectTime = expect1.getTime();
 								if (Math.abs((realTime - expectTime) / 1000) > timeFlow) {
@@ -252,15 +263,19 @@ public class ObjectCompareUtil {
 								}
 								continue;
 							}
-						} else if (objFlag.get(fieldName).startsWith("L")) {
-							String tmp = objFlag.get(fieldName).replace("L", "");
+						} else if (objFlag.get(fieldName).startsWith(CheckFlag.DYNAMIC_NUMBER_FLAG)) {
+							String tmp = objFlag.get(fieldName).replace(CheckFlag.DYNAMIC_NUMBER_FLAG, "");
 							long minVal = Long.valueOf(StringUtils.isEmpty(tmp) ? "0" : tmp);
 							if ((Long) objActual >= minVal) {
 								continue;
 							}
+						} else if (CheckFlag.CHECK_FLAG.equals(objFlag.get(fieldName))) {
+							compareByFields(objActual, objExpect);
+						} else {
+							throw new IllegalAccessException();
 						}
 					}
-					compareByFields(objActual, objExpect);
+
 				} catch (FrogCheckException e) {
 					throw new FrogCheckException("\n======>对象属性比对失败 field:{}, 失败原因:{}", fieldName, e.getMessage());
 				} catch (Exception e) {
@@ -271,6 +286,58 @@ public class ObjectCompareUtil {
 
 			}
 		}
+	}
+
+	/**
+	 * 填充所有属性的flags
+	 *
+	 * @param obj
+	 * @param originalFlags
+	 * @return
+	 */
+	public static void fillObjFlag(Object obj, Map<String, Map<String, String>> originalFlags) {
+		// Enum类型直接返回
+		if (ObjectUtil.isBasicType(obj)) {
+			return;
+		}
+		//填充标记
+		checkFlagFilled.put(obj.getClass().getName(), true);
+		String objClassName = obj.getClass().getName();
+		Map<String, String> fieldFlags = originalFlags.get(objClassName);
+		if (Objects.isNull(fieldFlags)) {
+			fieldFlags = Maps.newHashMap();
+			originalFlags.put(objClassName, fieldFlags);
+		}
+		// 填充check flags
+		Map<String, String> finalFieldFlags = fieldFlags;
+		ReflectionUtils.doWithFields(obj.getClass(), f -> {
+			f.setAccessible(true);
+			Object o = f.get(obj);
+			String fieldName = f.getName();
+			// 空则不做处理，以originalFlags为主
+			if (Objects.isNull(o)) {
+				if (Objects.isNull(finalFieldFlags.get(fieldName))) {
+					finalFieldFlags.put(fieldName, CheckFlag.NOT_CHECK_FLAG);
+				}
+				return;
+			}
+
+			// 非空处理,基本类型
+			if (ObjectUtil.isNonNullBasicType(o)) {
+				if (Objects.isNull(finalFieldFlags.get(fieldName))) {
+					finalFieldFlags.put(fieldName, CheckFlag.CHECK_FLAG);
+				}
+				return;
+				// 非空处理,pojo类型
+			} else {
+				if (Objects.isNull(finalFieldFlags.get(fieldName))) {
+					finalFieldFlags.put(fieldName, CheckFlag.CHECK_FLAG);
+				}
+				fillObjFlag(o, originalFlags);
+				return;
+			}
+
+		}, f -> true);
 	}
 
 	public static boolean isComparable(Class<?> objType) {
@@ -296,6 +363,10 @@ public class ObjectCompareUtil {
 		} else if (actual.getClass() == String.class) {
 			if (!actual.equals(expect)) {
 				throw new FrogCheckException("\n======>String类型数据比较结果不一致,acutal:{},expect:{}", actual, expect);
+			}
+		} else if (actual instanceof Enum) {
+			if (!actual.equals(expect)) {
+				throw new FrogCheckException("\n======>Enum类型数据比较结果不一致,acutal:{},expect:{}", actual, expect);
 			}
 		} else {
 			if (!actual.equals(expect)) {

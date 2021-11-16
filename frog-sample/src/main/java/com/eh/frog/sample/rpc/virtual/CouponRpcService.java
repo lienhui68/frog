@@ -15,5 +15,5 @@ import java.math.BigDecimal;
  * @version 1.0.0: ThirdService.java, v 0.1 2021-09-30 5:25 下午 david Exp $$
  */
 public interface CouponRpcService {
-	Coupon getCoupon(Long userId, BigDecimal orderAmount);
+	Coupon getCoupon(Long userId, BigDecimal orderAmount, CouponReq couponReq);
 }

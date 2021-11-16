@@ -6,20 +6,14 @@ package com.eh.frog.sample;
 
 import com.eh.frog.core.annotation.AfterPrepare;
 import com.eh.frog.core.annotation.FrogTest;
-import com.eh.frog.core.component.config.FrogComponentAutoConfiguration;
 import com.eh.frog.core.context.FrogRuntimeContext;
 import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.sample.base.SampleTestBase;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * @author f90fd4n david
  * @version 1.0.0: dao.java, v 0.1 2021-09-14 9:11 下午 david Exp $$
  */
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = {FrogSampleApplication.class, FrogComponentAutoConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class OrderControllerTest extends SampleTestBase {
 
 	@FrogTest

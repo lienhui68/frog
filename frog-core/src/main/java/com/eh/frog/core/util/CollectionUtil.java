@@ -6,6 +6,7 @@ package com.eh.frog.core.util;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
 import java.text.SimpleDateFormat;
@@ -32,6 +33,7 @@ public class CollectionUtil {
 		}
 		Map<String, Object> result = Maps.newHashMap();
 		final Map<String, String> fieldFlags = objFlags.get(obj.getClass().getName());
+		final boolean flagEmpty = CollectionUtils.isEmpty(fieldFlags);
 		// 使用Map模拟Object对象返回
 		ReflectionUtils.doWithFields(obj.getClass(), f -> {
 			f.setAccessible(true);
@@ -45,7 +47,7 @@ public class CollectionUtil {
 				result.put(f.getName(), filterObjByFlags(o, filterFlag, objFlags));
 			}
 		}, f -> {
-			if (!filterFlag) {
+			if (!filterFlag || flagEmpty) {
 				return true;
 			}
 			String fn = f.getName();

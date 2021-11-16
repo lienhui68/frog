@@ -27,6 +27,7 @@ public class VirtualObject {
 	private Object object;
 
 	/**
+	 * 如果flags不为空则以flag为主，如果为空则以expect是否为null为主
 	 * flag,<class, <field name, flag value>>
 	 */
 	public Map<String, Map<String, String>> flags = new LinkedHashMap<>();

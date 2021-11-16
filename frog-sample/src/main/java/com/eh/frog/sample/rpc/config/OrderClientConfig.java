@@ -17,6 +17,6 @@ public class OrderClientConfig {
 	@Bean
 	public CouponRpcService couponRpcService() {
 		// 连接，获取代理bean,这里假设没有获取到
-		return (userId, orderAmount) -> null;
+		return (userId, orderAmount, couponReq) -> null;
 	}
 }

@@ -4,7 +4,10 @@
  */
 package com.eh.frog.core.model;
 
+import com.eh.frog.core.model.ext.MockUnit;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author f90fd4n david
@@ -22,8 +25,8 @@ public class VirtualMockObject {
 	private String fieldName;
 	// target bean
 	private String target;
-	// 当容器中mock的bean类型对应多个实例时需要设置容器中beanName
-	private String targetBeanName;
-	// mock obj
-	private Object object;
+	// mock obj, any() -> returnObj
+	private Object defaultObj;
+	// mock obj, when(xxx).thenReturn(obj)，使用Spel表达式，变量使用args
+	private List<MockUnit> mockUnits;
 }

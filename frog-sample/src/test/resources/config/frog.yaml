@@ -1,10 +1,10 @@
 baseConfig:
   messageEventPoi: execution(public * com.eh.frog.sample.mq.producer.*Sender.send*(..))
   datasourceBeanName: dataSource
-  prepareRunBackFill: false
+  prepareRunBackFill: true
   testDataFolder: data
   prepareFillFlagFilter: true
-  testOnly: ^T
+#  testOnly: ^T
   postProcessClean: false
 tableQueryConfig:
   commonTableQueryConfig: [ user_id ]

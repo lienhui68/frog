@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Date;
+
 /**
  * @author f90fd4n david
  * @version 1.0.0: dao.java, v 0.1 2021-09-14 9:11 下午 david Exp $$
@@ -38,11 +40,16 @@ public class UserControllerTest  {
 	 */
 	@Test
 	public void createUser() {
-		User user = new User();
-		user.setUserId(2L);
-		user.setUserName("武松");
-		Response response = userController.createUser(user);
-		System.out.println(response);
+//		User user = new User();
+//		user.setUserId(2L);
+//		user.setUserName("武松");
+//		Response response = userController.createUser(user);
+//		System.out.println(response);
+	}
+
+
+	public void test1() {
+
 	}
 
 }

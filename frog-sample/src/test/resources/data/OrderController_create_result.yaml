@@ -6,19 +6,16 @@ expectDataSet:
 - flags: {}
   tableBaseDesc: null
   tableData:
-  - {gmt_modified: today, order_id: 3224940252803794944, order_amount: 215.25, order_time: '2021-10-08
-      14:37:10', order_status: 1, buyer_id: 1025229}
+  - {}
   tableName: tbl_order
 expectEventSet:
 - desc: null
   flags: {}
   msgClass: com.eh.frog.sample.mq.model.OrderEventMessage
   objects:
-  - orderAmount: 215.25
-    orderTime: '2021-10-08 14:37:10'
-    coupon: {couponAmount: 10.00, couponId: 9999, userId: 1025229}
-    orderId: 3224940252803794944
-    eventType: !!com.eh.frog.sample.enums.OrderEventType 'CREATE'
+  - orderTime: '2021-10-08 14:37:10'
+    coupon: {userId: 1025229}
+    orderId: 4717176105647782912
 expectException: null
 expectResult:
   desc: null

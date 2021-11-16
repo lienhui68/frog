@@ -48,6 +48,7 @@ public class MessageEventAdvice implements MethodInterceptor {
 		EventContextHolder.setEvent(clazzName, actual);
 		// 预跑反填
 		if (GlobalConfigurationHolder.getFrogConfig().isEnablePrepareFill()) {
+			log.info("==============>预跑反填, 拦截到消息数据进行处理");
 			// 获取待填PrepareData
 			PrepareData prepareData = PrepareFillDataHolder.getPrepareData();
 			List<VirtualEventGroup> expectEventSet = prepareData.getExpectEventSet();

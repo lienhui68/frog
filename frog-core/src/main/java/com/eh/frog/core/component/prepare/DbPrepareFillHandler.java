@@ -11,6 +11,7 @@ import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.model.VirtualTable;
 import com.eh.frog.core.sqlparser.SqlParseResult;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.util.CollectionUtils;
@@ -22,8 +23,10 @@ import java.util.*;
  * @author f90fd4n david
  * @version 1.0.0: PrepareDb4UpdateStrategy.java, v 0.1 2021-11-05 7:17 下午 david Exp $$
  */
+@Slf4j
 public class DbPrepareFillHandler {
 	public static void fillInsertData(SqlParseResult sqlParseResult, List<Object> params) {
+		log.info("==============>预跑反填, 拦截到插入数据进行处理");
 		Assertions.assertNotNull(sqlParseResult);
 		Assertions.assertNotNull(sqlParseResult.getTableName());
 		Assertions.assertNotNull(sqlParseResult.getInsertColumnValueMap());
@@ -54,11 +57,12 @@ public class DbPrepareFillHandler {
 	}
 
 	/**
+	 * 这里使用插入时的原始数据，防止出现幻读
 	 * @param strData
 	 * @param params
 	 * @return
 	 */
-	private static Map<String, Object> convertInsertDbDataByFlags(String tableName, LinkedHashMap<String, String> strData, List<Object> params) {
+	private static LinkedHashMap<String, Object> convertInsertDbDataByFlags(String tableName, LinkedHashMap<String, String> strData, List<Object> params) {
 		Map<String, String> flags = null;
 		if (GlobalConfigurationHolder.getFrogConfig().isPrepareFillFlagFilter()) {
 			List<VirtualTable> depDataSet = FrogRuntimeContextHolder.getContext().getPrepareData().getExpectDataSet();
@@ -71,7 +75,7 @@ public class DbPrepareFillHandler {
 			}
 		}
 
-		Map<String, Object> data = new LinkedHashMap<>();
+		LinkedHashMap<String, Object> data = new LinkedHashMap<>();
 		int i = 0;
 		for (Map.Entry<String, String> entry : strData.entrySet()) {
 			String key = entry.getKey();
@@ -114,6 +118,7 @@ public class DbPrepareFillHandler {
 	 * @param dbDataProcessor
 	 */
 	public static void fillUpdateData(SqlParseResult sqlParseResult, DBDataProcessor dbDataProcessor) {
+		log.info("==============>预跑反填, 拦截到更新数据进行处理");
 		Assertions.assertNotNull(sqlParseResult);
 		Assertions.assertNotNull(sqlParseResult.getTableName());
 		Assertions.assertNotNull(sqlParseResult.getUpdateConditionColumnValueMap());

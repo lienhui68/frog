@@ -219,7 +219,9 @@ public class FrogTestBase implements ApplicationContextAware {
 			execute(frogRuntimeContext);
 			if (GlobalConfigurationHolder.getFrogConfig().isEnablePrepareFill()) {
 				// prepare fill
+				log.info("==============>预跑反填, 填充预跑结果数据");
 				prepareFill();
+				log.info("==============>预跑反填, 清理结果数据缓存");
 				PrepareFillDataHolder.clear();
 			} else {
 				// check
@@ -238,7 +240,7 @@ public class FrogTestBase implements ApplicationContextAware {
 	private void prepareFill() {
 		PrepareData prepareData = PrepareFillDataHolder.getPrepareData();
 		// 获取反填临时文件路径
-		String path = org.apache.commons.lang.StringUtils.replace(TestDataFilePathHolder.getContext(), ".yaml", "_res.yaml");
+		String path = org.apache.commons.lang.StringUtils.replace(TestDataFilePathHolder.getContext(), ".yaml", "_result.yaml");
 		if (StringUtils.isEmpty(path)) {
 			path = FrogConfigConstants.DEFAULT_PREPARE_FILL_TMP_FILE;
 		}

@@ -4,7 +4,6 @@
  */
 package com.eh.frog.core.util;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
@@ -27,9 +26,9 @@ public class CollectionUtil {
 	 * @param objFlags
 	 * @return
 	 */
-	public static Map<String, Object> filterObjByFlags(Object obj, boolean filterFlag, Map<String, Map<String, String>> objFlags) {
-		if (ObjectUtil.isBasicType(obj)) {
-			return Maps.newHashMap(ImmutableMap.of(StringUtil.lowerFirstCase(obj.getClass().getSimpleName()), obj));
+	public static Map<String, Object> filterObjByFlags(Object obj, boolean filterFlag, Map<String, Map<String, String>> objFlags) throws IllegalAccessException {
+		if (ObjectUtil.isNonNullBasicType(obj)) {
+			throw new IllegalAccessException("程序执行错误,基本类型参数不应该执行到此处");
 		}
 		Map<String, Object> result = Maps.newHashMap();
 		final Map<String, String> fieldFlags = objFlags.get(obj.getClass().getName());

@@ -14,7 +14,6 @@ import com.eh.frog.core.context.FrogRuntimeContext;
 import com.eh.frog.core.context.FrogRuntimeContextHolder;
 import com.eh.frog.core.exception.FrogCheckException;
 import com.eh.frog.core.exception.FrogTestException;
-import com.eh.frog.core.model.CheckFlag;
 import com.eh.frog.core.model.PrepareData;
 import com.eh.frog.core.model.VirtualEventGroup;
 import com.eh.frog.core.model.VirtualObject;
@@ -23,20 +22,14 @@ import com.eh.frog.core.util.CollectionUtil;
 import com.eh.frog.core.util.ObjectCompareUtil;
 import com.eh.frog.core.util.ObjectUtil;
 import com.eh.frog.core.util.StringUtil;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Assertions;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -184,38 +177,8 @@ public class TestUnitHandler {
 
 	}
 
-	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		//如果传进来是一个已实现的具体类（本次演示略过此逻辑)
-		if (Object.class.equals(method.getDeclaringClass())) {
-			try {
-				return method.invoke(this, args);
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
-			//如果传进来的是一个接口（核心)
-		} else {
-			return run(method, args);
-		}
-		return null;
-	}
-
 	/**
-	 * 实现接口的核心方法
-	 *
-	 * @param method
-	 * @param args
-	 * @return
-	 */
-	public Object run(Method method, Object[] args) {
-		//TODO
-		//如远程http调用
-		//如远程方法调用（rmi)
-		//....
-		return "method call success!";
-	}
-
-	/**
-	 * 准备MOck数据
+	 * 准备配置中心数据
 	 */
 	public void prepareConfigData() {
 		try {
@@ -281,10 +244,14 @@ public class TestUnitHandler {
 				frogRuntimeContext.setResultObj(resultObj);
 				// 预跑反填
 				if (GlobalConfigurationHolder.getFrogConfig().isEnablePrepareFill()) {
+					log.info("==============>预跑反填, 拦截到结果数据进行处理");
 					// 获取待填PrepareData
 					PrepareData prepareData = PrepareFillDataHolder.getPrepareData();
 					VirtualObject resultVirtualObject = VirtualObject.of(resultObj);
 					prepareData.setExpectResult(resultVirtualObject);
+					if (Objects.isNull(resultObj)) {
+						return;
+					}
 
 					Map<String, Map<String, String>> resultFlags = getResultFlags();
 					prepareData.setExpectResult(VirtualObject.of(CollectionUtil.filterObjByFlags(resultObj, GlobalConfigurationHolder.getFrogConfig().isPrepareFillFlagFilter(), resultFlags)));

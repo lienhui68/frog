@@ -96,7 +96,7 @@ public class MybatisPlugin4Prepare implements Interceptor {
 	private String replaceSql(String sql, Object parameterObject) {
 		String result;
 		if (Objects.isNull(parameterObject)) {
-			result = null;
+			result = "null";
 		} else if (parameterObject instanceof String) {
 			result = "'" + parameterObject.toString() + "'";
 		} else if (parameterObject instanceof Date) {

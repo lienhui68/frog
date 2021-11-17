@@ -23,7 +23,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
  * @version 1.0.0: SampleTestBase.java, v 0.1 2021-11-04 2:40 下午 david Exp $$
  */
 @EnablePlugin({
-//		@PluginSignature(type = PersistencePlugin.class, plugins = {ClusterRedisPersistencePluginImpl.class})
+		@PluginSignature(type = PersistencePlugin.class, plugins = {ClusterRedisPersistencePluginImpl.class})
 })
 @ContextConfiguration(initializers = {DisableAutowireRequireInitializer.class})
 @ExtendWith(SpringExtension.class)

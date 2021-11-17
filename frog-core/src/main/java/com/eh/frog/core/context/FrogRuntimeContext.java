@@ -10,6 +10,8 @@ import lombok.Data;
 import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Method;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @author f90fd4n david
@@ -48,6 +50,9 @@ public class FrogRuntimeContext {
 
 	public ApplicationContext applicationContext;
 
+	/** parameter list，can be specified by $ */
+	public Map<String, Object> paramMap             = new LinkedHashMap<>();
+
 	/**
 	 * Constructor.
 	 *
@@ -66,6 +71,30 @@ public class FrogRuntimeContext {
 		this.testedMethod = testedMethod;
 		this.testedObj = testedObj;
 		this.applicationContext = applicationContext;
+	}
+
+	/**
+	 * Add one param.
+	 *
+	 * @param paraName the para name
+	 * @param paraObj the para obj
+	 */
+	public void addOneParam(String paraName, Object paraObj) {
+		paramMap.put(paraName, paraObj);
+	}
+
+	/**
+	 * Gets param by name.
+	 *
+	 * @param paraName the para name
+	 * @return the param by name
+	 */
+	public Object getParamByName(String paraName) {
+		if (null == paraName) {
+			return null;
+		}
+
+		return paramMap.get(paraName);
 	}
 
 }

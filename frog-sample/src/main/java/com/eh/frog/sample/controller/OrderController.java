@@ -79,6 +79,12 @@ public class OrderController {
 		return Response.success(true);
 	}
 
+//	@PostMapping("/order/pay")
+//	public Response<Boolean> writeRpc(@Param("id") Long orderId) {
+//		couponRpcService.getCoupon(111L, new BigDecimal(100), new CouponReq("bbb", 1));
+//		return Response.success(true);
+//	}
+
 	private Long generateDistributedId() {
 		return RandomUtils.nextLong();
 	}

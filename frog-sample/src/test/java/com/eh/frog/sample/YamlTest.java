@@ -5,10 +5,7 @@
 package com.eh.frog.sample;
 
 import com.eh.frog.core.config.FrogConfig;
-import com.eh.frog.core.model.PrepareData;
-import com.eh.frog.core.model.VirtualEventGroup;
-import com.eh.frog.core.model.VirtualMockObject;
-import com.eh.frog.core.model.VirtualObject;
+import com.eh.frog.core.model.*;
 import com.eh.frog.core.model.ext.MockUnit;
 import com.eh.frog.core.util.FrogFileUtil;
 import com.eh.frog.plugin.redis.model.RedisDataUnit;
@@ -17,9 +14,9 @@ import com.eh.frog.sample.enums.OrderEventType;
 import com.eh.frog.sample.mq.model.OrderEventMessage;
 import com.eh.frog.sample.orm.bean.Order;
 import com.eh.frog.sample.rpc.response.Coupon;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -74,7 +71,6 @@ public class YamlTest {
 		prepareData.setExtendParams(pluginParams);
 		// mock第三方服务
 		VirtualMockObject mock = new VirtualMockObject();
-
 		Coupon coupon = new Coupon();
 		coupon.setUserId(1025229L);
 		MockUnit mockUnit1 = new MockUnit("aaaa", coupon);
@@ -83,6 +79,14 @@ public class YamlTest {
 		MockUnit mockUnit2 = new MockUnit("aaaa", coupon2);
 		mock.setMockUnits(Lists.newArrayList(mockUnit1, mockUnit2));
 		prepareData.setVirtualMockSet(Lists.newArrayList(mock));
+		// mock接口调用
+		VirtualInvocationGroup virtualInvocationGroup = new VirtualInvocationGroup();
+		virtualInvocationGroup.setDesc("virtualInvocationGroup");
+		List<Object> invocationArgs = Lists.newArrayList("aaaa", "bbb");
+		List<Object> invocationArgs2 = Lists.newArrayList("aaaa2", "bbb2");
+		List<List<Object>> lists = Lists.newArrayList(invocationArgs, invocationArgs2);
+		virtualInvocationGroup.setObjects(lists);
+		prepareData.setExpectInvocationSet(Lists.newArrayList(virtualInvocationGroup));
 		String yaml = new Yaml().dump(prepareData);
 		log.info("\n" + yaml);
 	}

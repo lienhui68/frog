@@ -1,9 +1,9 @@
 baseConfig:
   messageEventPoi: execution(public * com.eh.frog.sample.mq.producer.*Sender.send*(..))
   datasourceBeanName: dataSource
-  prepareRunBackFill: true
-  testDataFolder: data
+  prepareRunBackFill: false
   prepareFillFlagFilter: true
+  testDataFolder: data
 #  testOnly: ^T
   postProcessClean: false
 tableQueryConfig:

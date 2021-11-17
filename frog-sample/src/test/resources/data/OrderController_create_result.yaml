@@ -1,4 +1,3 @@
-!!yaml
 args: null
 depDataSet: null
 desc: T成功创建订单，优惠开关打开,使用redis插件，测试mock服务对不同输入有不同返回,当buyerId是1025229时，优惠金额是10元，其他情况是5元，需要使用whenObject
@@ -6,7 +5,8 @@ expectDataSet:
 - flags: {}
   tableBaseDesc: null
   tableData:
-  - {}
+  - {order_amount: 6489883865245499392, order_time: 220.25, order_status: '2021-10-08
+      14:37:10'}
   tableName: tbl_order
 expectEventSet:
 - desc: null
@@ -15,7 +15,7 @@ expectEventSet:
   objects:
   - orderTime: '2021-10-08 14:37:10'
     coupon: {userId: 1025229}
-    orderId: 4717176105647782912
+    orderId: 6489883865245499392
 expectException: null
 expectResult:
   desc: null

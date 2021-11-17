@@ -27,6 +27,8 @@ public class PrepareData {
 	private List<VirtualTable> expectDataSet;
 	// message expectation
 	private List<VirtualEventGroup> expectEventSet;
+	// invocation expectation
+	private List<VirtualInvocationGroup> expectInvocationSet;
 	// exception expectation
 	private VirtualObject expectException;
 	// mock
